@@ -81,11 +81,11 @@ noncomputable def gram (ϑ φ : ℝ) : Matrix (Fin 2) (Fin 2) ℝ :=
 /-- **Theorem 1.** `M = diag(cos² ϑ, 1)`, with no dependence on `φ`. -/
 theorem gram_eq (ϑ φ : ℝ) : gram ϑ φ = !![cos ϑ ^ 2, 0; 0, 1] := by
   ext i j
-  fin_cases i <;> fin_cases j <;> simp [gram]
-  · linear_combination cos ϑ ^ 2 * sin_sq_add_cos_sq φ
-  · ring
-  · ring
-  · linear_combination sin_sq_add_cos_sq φ
+  fin_cases i <;> fin_cases j <;> simp [gram] <;>
+    first
+    | linear_combination cos ϑ ^ 2 * sin_sq_add_cos_sq φ
+    | linear_combination sin_sq_add_cos_sq φ
+    | ring
 
 /-- **Theorem 1, spectrum.** `det M = cos² ϑ` and `tr M = cos² ϑ + 1`. -/
 theorem gram_det_trace (ϑ φ : ℝ) :
@@ -97,7 +97,7 @@ theorem gram_det_trace (ϑ φ : ℝ) :
 
 /-- The spectral gap `1 − cos² ϑ` equals `sin² ϑ`. -/
 theorem gap_eq (ϑ : ℝ) : 1 - cos ϑ ^ 2 = sin ϑ ^ 2 := by
-  linear_combination sin_sq_add_cos_sq ϑ
+  linear_combination -(sin_sq_add_cos_sq ϑ)
 
 /-- **Proposition 3.** At syzygy `λ_min = 0` and the gap equals 1, its maximum. -/
 theorem syzygy_rank_drop :
@@ -185,15 +185,14 @@ theorem reciprocity (t g : n → ℝ) (hg : ∀ i, g i ≠ 0) :
     (transport t g)ᵀ * pairing t g = pairing t g * transport t g := by
   ext i j
   rw [pairing, mul_diagonal, diagonal_mul]
-  simp only [transport, transpose_apply, sub_apply, of_apply, diagonal_apply]
+  simp only [transport, transpose_apply, Matrix.sub_apply, Matrix.of_apply, diagonal_apply]
   by_cases hij : i = j
   · subst hij
     simp
-    field_simp [hg i]
+    try field_simp [hg i]
   · have hji : j ≠ i := Ne.symm hij
     simp [hij, hji]
-    field_simp [hg i, hg j]
-    ring
+    try (field_simp [hg i, hg j]; ring)
 
 /-- **Theorem 9, left eigenvectors.** If `A R = λ R` then `ℓ = B R` satisfies `Aᵀ ℓ = λ ℓ`. -/
 theorem left_eigenvector (t g : n → ℝ) (hg : ∀ i, g i ≠ 0) (R : n → ℝ) (μ : ℝ)
@@ -213,14 +212,12 @@ noncomputable def ledger (lam : ℝ) : ℝ := log (1 + lam) + log (1 + 1)
 theorem ledger_min (lam : ℝ) (h : 0 ≤ lam) :
     log 2 ≤ ledger lam ∧ (ledger lam = log 2 ↔ lam = 0) := by
   have h1 : 0 ≤ log (1 + lam) := log_nonneg (by linarith)
+  have h2 : log (1 + 1 : ℝ) = log 2 := by norm_num
   unfold ledger
-  norm_num
-  refine ⟨h1, ?_⟩
-  constructor
-  · intro hz
-    rcases log_eq_zero.mp hz with h' | h' | h' <;> linarith
-  · intro hz
-    simp [hz]
+  rw [h2]
+  refine ⟨by linarith, fun hz => ?_, fun hz => by simp [hz]⟩
+  have h0 : log (1 + lam) = 0 := by linarith
+  rcases log_eq_zero.mp h0 with h' | h' | h' <;> linarith
 
 /-! ## Proposition 17: transverse motions at a collinear configuration -/
 
