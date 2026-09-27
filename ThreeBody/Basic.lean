@@ -188,11 +188,14 @@ theorem reciprocity (t g : n → ℝ) (hg : ∀ i, g i ≠ 0) :
   simp only [transport, transpose_apply, Matrix.sub_apply, Matrix.of_apply, diagonal_apply]
   by_cases hij : i = j
   · subst hij
-    simp
-    try field_simp [hg i]
+    rw [if_pos rfl]
+    ring
   · have hji : j ≠ i := Ne.symm hij
-    simp [hij, hji]
-    try (field_simp [hg i, hg j]; ring)
+    rw [if_neg hji, if_neg hij, div_eq_mul_inv, div_eq_mul_inv]
+    calc (0 - g j * t i) * (t j * (g j)⁻¹) = -(t i * t j) * (g j * (g j)⁻¹) := by ring
+      _ = -(t i * t j) * (g i * (g i)⁻¹) := by
+        rw [mul_inv_cancel₀ (hg j), mul_inv_cancel₀ (hg i)]
+      _ = t i * (g i)⁻¹ * (0 - g i * t j) := by ring
 
 /-- **Theorem 9, left eigenvectors.** If `A R = λ R` then `ℓ = B R` satisfies `Aᵀ ℓ = λ ℓ`. -/
 theorem left_eigenvector (t g : n → ℝ) (hg : ∀ i, g i ≠ 0) (R : n → ℝ) (μ : ℝ)
