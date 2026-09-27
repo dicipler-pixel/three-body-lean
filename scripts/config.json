@@ -1,0 +1,1 @@
+{"modules":[{"module":"ThreeBody.Basic","path":"ThreeBody/Basic.lean"}],"expected_theorems":22,"expected_false_controls":3,"root_imports":["ThreeBody.Basic"]}
