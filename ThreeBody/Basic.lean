@@ -9,13 +9,13 @@ read in the orthonormal frame `{e_ϑ, e_φ}`.
 * Eq. (1): the three side coefficients are unit vectors at mutual 120°, summing to zero.
 * Theorem 1: `dΦ(e_ϑ) = (cos ϑ cos φ, cos ϑ sin φ)`, `dΦ(e_φ) = (−sin φ, cos φ)` and
   `M = diag(cos² ϑ, 1)`, with no dependence on `φ`.
-* Propositions 3 and 4: at syzygy `λ_min = 0` and the gap `sin² ϑ` is maximal; at the poles the
-  gap closes while `det M → 1`.
-* Theorem 5: the gap closes quadratically, `gap/ϑ² → 1`.
+* Propositions 3 and 4: at syzygy `λ_min = 0` and the gap `sin² ϑ` is maximal; at the pole
+  `ϑ = 0` the gap closes while `det M → 1`.
+* Theorem 5: the gap closes quadratically at `ϑ = 0`, `gap/ϑ² → 1`.
 * Remark 7: a symmetric 2-tensor commuting with the 120° rotation is a multiple of the identity.
 * Proposition 8: near syzygy `λ_min = sin² ε` (the fold), with `λ_min/ε² → 1`.
-* Theorem 9: `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` for `B = diag(t/g)`, and `B R` is a left
-  eigenvector for every right eigenvector `R`.
+* Theorem 9: `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` for `B = diag(t/g)`, and for every right
+  eigenvector `R`, `ℓ = B R` satisfies `Aᵀ ℓ = μ ℓ` (that `ℓ ≠ 0` is not stated).
 * Theorem 10 (the exact part): the shifted ledger `log(1+λ_min) + log 2` is at least `log 2`,
   with equality exactly at `λ_min = 0`.
 * Proposition 17 (the key step): at a collinear configuration every transverse motion leaves every
@@ -104,7 +104,7 @@ theorem syzygy_rank_drop :
     cos (π / 2) ^ 2 = 0 ∧ 1 - cos (π / 2) ^ 2 = 1 ∧ ∀ ϑ, 1 - cos ϑ ^ 2 ≤ 1 := by
   refine ⟨by simp, by simp, fun ϑ => by nlinarith [sq_nonneg (cos ϑ)]⟩
 
-/-- **Proposition 4.** At the poles the gap closes while `det M → 1`. -/
+/-- **Proposition 4.** At the pole `ϑ = 0` the gap closes while `det M → 1`. -/
 theorem pole_gap_closes :
     Tendsto (fun ϑ => cos ϑ ^ 2) (𝓝 0) (𝓝 1) ∧
       Tendsto (fun ϑ => 1 - cos ϑ ^ 2) (𝓝 0) (𝓝 0) := by
@@ -160,7 +160,8 @@ theorem fold_lambda (ε : ℝ) : cos (π / 2 + ε) ^ 2 = sin ε ^ 2 := by
   rw [cos_add, cos_pi_div_two, sin_pi_div_two]
   ring
 
-/-- **Proposition 8, simple zero.** `λ_min/ε² → 1` at the fold, so `R = λ_min⁻² ∼ ε⁻⁴`. -/
+/-- **Proposition 8, simple zero.** `λ_min/ε² → 1` at the fold; the paper reads this as
+`R = λ_min⁻² ∼ ε⁻⁴`. -/
 theorem fold_quadratic :
     Tendsto (fun ε => cos (π / 2 + ε) ^ 2 / ε ^ 2) (𝓝[≠] 0) (𝓝 1) := by
   have h := sin_div_self_tendsto.pow 2
@@ -180,7 +181,7 @@ def transport (t g : n → ℝ) : Matrix n n ℝ := diagonal t - of fun i j => g
 /-- The pairing `B = diag(t/g)`. -/
 noncomputable def pairing (t g : n → ℝ) : Matrix n n ℝ := diagonal fun i => t i / g i
 
-/-- **Theorem 9.** `A` is complex-symmetric for the pairing `B`: `Aᵀ B = B A`. -/
+/-- **Theorem 9.** `A` is symmetric for the pairing `B`: `Aᵀ B = B A`. -/
 theorem reciprocity (t g : n → ℝ) (hg : ∀ i, g i ≠ 0) :
     (transport t g)ᵀ * pairing t g = pairing t g * transport t g := by
   ext i j
