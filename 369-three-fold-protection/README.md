@@ -6,6 +6,8 @@ The 3-6-9 modular construction is DarkWolf's. Jeromie Beasley worked through the
 conversation with Grok, and the straw-man audit, the rebuild and the Lean with Claude.
 Created with AI assistance; the authors directed the work.
 
+**Read the report: [report.pdf](report.pdf)**
+
 ## The rule that survived
 
 The residue class `x mod 9 ∈ {0, 3, 6}` is exactly "3 divides x" (`mod9_036_iff_dvd3`). Read as
@@ -38,7 +40,8 @@ What did not survive:
 | File | What it is |
 | :--- | :--- |
 | `SM369.lean` | 14 theorems, core Lean only (no Mathlib), no `sorry`. Checked with Lean 4.24.0 and 4.34.1 |
-| `report.html` | The full straw-man report: strongest forms, kill conditions, opposites, rebuild, sources |
+| [`report.pdf`](report.pdf) | **The full report as a PDF (12 pages)**: strongest forms, kill conditions, opposites, rebuild, sources, run outputs, the Lean and the scripts |
+| `report.html` | The same report as a web page |
 | `scripts/` | `battery.py` (tests T1–T8), `knots.py` (Alexander polynomials and Fox colourings from SnapPy PD codes), `colour_angles.py` |
 | `outputs/` | The run outputs quoted in the report |
 
