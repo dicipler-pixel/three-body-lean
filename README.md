@@ -58,3 +58,7 @@ Mathlib v4.34.1, independent replay in Lean's kernel checker, an axiom audit (on
 Copyright (c) 2026 Jeromie Beasley. Code and proofs: [MIT](LICENSE). Written text:
 [CC BY 4.0](LICENSE-CC-BY-4.0.md). See [`LICENSING.md`](LICENSING.md). Citation metadata is in
 [`CITATION.cff`](CITATION.cff); how AI tools were used is stated in [`AI_USE.md`](AI_USE.md).
+
+## Also in this repository
+
+[`369-three-fold-protection/`](369-three-fold-protection/): the 3-6-9 straw man (DarkWolf, Jeromie Beasley, Grok, Claude), with the three-fold protection rule, its computations and 14 core-Lean theorems checked by their own workflow.

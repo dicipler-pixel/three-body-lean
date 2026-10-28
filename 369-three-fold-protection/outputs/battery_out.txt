@@ -1,0 +1,62 @@
+
+=== T1 OAM on a ring, potential with n-fold symmetry: is l conserved mod n?
+    kill condition: population leaving the starting class l mod n exceeds 1e-10 (symmetric case) -> rule dead; control must leak when symmetry is broken
+    9-fold, start l= 3, symmetry broken=0: population outside l≡3 (mod 9) = 0.00e+00
+    9-fold, start l= 1, symmetry broken=0: population outside l≡1 (mod 9) = 0.00e+00
+    3-fold, start l= 3, symmetry broken=0: population outside l≡0 (mod 3) = 0.00e+00
+    3-fold, start l= 1, symmetry broken=0: population outside l≡1 (mod 3) = 0.00e+00
+    9-fold, start l= 3, symmetry broken=0.3: population outside l≡3 (mod 9) = 1.78e-02
+    3-fold, start l= 3, symmetry broken=0.3: population outside l≡0 (mod 3) = 9.23e-02
+    modes with exp(2πi l/3)=1 among l mod 9: [0, 3, 6]
+
+=== T2 winding of a vortex field under random smooth perturbation, l = 1,2,3,4,6,9
+    kill condition: if l=1 or l=2 winding changes under small continuous perturbation while l=3,6,9 hold -> 3-6-9 protection survives; if all hold -> protection is universal, the 3-6-9 restriction dies
+    l=1: windings after 20 random perturbations = [1]
+    l=2: windings after 20 random perturbations = [2]
+    l=3: windings after 20 random perturbations = [3]
+    l=4: windings after 20 random perturbations = [4]
+    l=6: windings after 20 random perturbations = [6]
+    l=9: windings after 20 random perturbations = [9]
+
+=== T3 the residue set {0,3,6} mod 9
+    kill condition: none (identity check)
+    l mod 9 in {0,3,6}  <=>  3 | l : True
+    digit sum ≡ n (mod 9) for n<10^5: True
+
+=== T4 Solfeggio 528/639/741/852/963 Hz
+    kill condition: a physical selection rule must survive a change of units; if residues mod 9 change when the unit changes, the residue is not physical
+    in Hz: mod 9 = [6, 0, 3, 6, 0]  all divisible by 3: True  step = 111 = 3·37
+    period in microseconds (1e6/f): [1893.939, 1564.945, 1349.528, 1173.709, 1038.422]
+    in cycles per 7 seconds: [3696, 4473, 5187, 5964, 6741] mod 9 = [6, 0, 3, 6, 0]
+    in units of 1/2 Hz: [1056, 1278, 1482, 1704, 1926] mod 9 = [3, 0, 6, 3, 0]  (divisibility by 3 survives integer rescaling; the residues 3 vs 6 do not)
+    musical ratios 639/528 = 1.2102  741/528 = 1.4034  (equal-tempered minor third 1.1892, major third 1.2599)
+
+=== T5 sphere-packing lattices: shell counts mod 3 and mod 9
+    kill condition: claim "every shell count of an Eisenstein (Z[ω]) lattice is ≡ 0 mod 3" dies if any count (n≥1) is not; control: Z^2 and Z^8 (no free 3-fold symmetry) should hit other residues
+    E8 shells (240·σ3(n)), n=1..40: mod 9 residues = [0, 3, 6]  first: [240, 2160, 6720, 17520, 30240]
+    A2 hexagonal shells n=1..60 (nonzero): mod 9 residues = [0, 3, 6]  first: [6, 0, 6, 6, 0, 0, 12]
+    control Z^2 shells (nonzero): mod 3 residues = [0, 1, 2]  first: [4, 4, 0, 4, 8]
+    Leech: counts at norm 2,4,6 = [0, 196560, 16773120]  (expect 0? norm 2 = 0, then 196560, 16773120)
+    Leech shells n=1..29 nonzero: mod 9 residues = [0]
+    control Z^8 shells n=1..20: mod 3 residues = [0, 1, 2]  first: [16, 112, 448, 1136]
+    E8 exponents mod 3 = [1, 1, 2, 1, 2, 1, 2, 2]  -> w^10 has no eigenvalue 1: fixed-point-free order 3 = True
+
+=== T6 integral Apollonian packing (-1,2,2,3): curvature residues
+    kill condition: claim "Apollonian curvatures are confined to {0,3,6} mod 9" dies if other residues occur; record what IS restricted (mod 24, mod 3)
+    distinct curvatures up to 20000 : 6620
+    residues mod 3: [0, 2]
+    residues mod 9: [0, 2, 3, 5, 6, 8]
+    residues mod 24: [2, 3, 6, 11, 14, 15, 18, 23]
+
+=== T7 triangulations of an (n+2)-gon = Catalan C_n (Tr φ³ tree diagrams): residues
+    kill condition: claim "triangulation counts single out 3" dies if the same density-1 divisibility holds for 2 and 5
+    fraction of C_n ≡ 0 mod 2, n<3000: 0.996
+    fraction of C_n ≡ 0 mod 3, n<3000: 0.895
+    fraction of C_n ≡ 0 mod 5, n<3000: 0.892
+    fraction of C_n ≡ 0 mod 9, n<3000: 0.727
+    C_n mod 9 for n=1..20: [1, 2, 5, 5, 6, 6, 6, 8, 2, 2, 7, 4, 4, 0, 0, 0, 6, 6, 6, 3]
+
+=== T8 permuting three bodies acts on the shape sphere (Hopf base) as D3
+    kill condition: dies if the cyclic relabelling is not a 120° rotation about the equilateral (polar) axis
+    rotation angle of the cyclic relabelling about the polar axis: [240.0] …  change in height (signed area): 3.3e-16
+    equilateral triangle maps to the pole: [ 0.  0. -1.]

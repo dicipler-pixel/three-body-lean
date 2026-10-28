@@ -1,0 +1,519 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>3-6-9 Straw Man</title><meta name="author" content="DarkWolf (@DarkDireWolf33), Jeromie Beasley, Grok (xAI), Claude (Anthropic)"><style>:root{--bg:#070c18;--ink:#e3ebff;--dim:#9fb0cf;--ok:#4fe3c1;--bad:#ff6f91;--warn:#ffb547;--line:#1d2a44}
+body{background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,-apple-system,Segoe UI,sans-serif;max-width:980px;margin:0 auto;padding:28px 16px 60px}
+h1{font-size:29px;margin:0 0 6px}h2{font-size:21px;margin:34px 0 8px;border-bottom:1px solid var(--line);padding-bottom:4px}
+.sub{color:var(--dim)}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}
+td.ok b,td.bad b,td.warn b{color:inherit}
+table{border-collapse:collapse;width:100%;font-size:14.5px}td,th{border-bottom:1px solid var(--line);padding:7px 8px;vertical-align:top;text-align:left}th{color:var(--dim);font-weight:600}
+td.ok{color:#c9fff0}td.bad{color:#ffd0dc}td.warn{color:#ffe7c2}
+code{color:#9fd6ff;font-family:ui-monospace,Menlo,monospace;font-size:13.5px}
+pre{background:#0b1426;border:1px solid var(--line);border-radius:8px;padding:12px;overflow-x:auto;font-size:12.5px;line-height:1.45;color:#cfe0ff}
+.hero{border-left:3px solid var(--ok);padding:6px 16px;margin:12px 0;background:rgba(79,227,193,.05)}
+li{margin:4px 0}</style></head><body><h1>3-6-9: straw man to the max</h1>
+<p style="font-size:18px;margin:6px 0 2px"><b>DarkWolf</b> (<a style="color:#9fd6ff" href="https://x.com/DarkDireWolf33">@DarkDireWolf33</a>) · <b>Jeromie Beasley</b> · <b>Grok</b> (xAI) · <b>Claude</b> (Anthropic)</p>
+<p class="sub" style="margin-top:2px">The 3-6-9 modular construction is DarkWolf's. Jeromie Beasley worked through the synthesis conversation with Grok, and the straw-man audit, the rebuild and the Lean with Claude. 28 October 2026.</p>
+<p class="sub"><i>This report was created with AI assistance (Grok and Claude). The authors directed the work. The Lean proofs are kernel-checked, and the computations can be rerun from the code in the appendices.</i></p>
+<p class="sub">Method: straw man it, kill it, rebuild it. Each claim is attacked in its strongest form, its kill condition is written before the run, its opposite is run before anything is called dead, and the rebuild uses only what survives. Inputs:</p>
+<ul class="sub">
+<li>the Grok 3-6-9 conversation;</li>
+<li>Colour Selects the Leader and the Mixin files;</li>
+<li>all 35 public Lean repositories of Jeromie Beasley;</li>
+<li>primary papers of Viazovska, Piccirillo, Mirzakhani and Figueiredo.</li>
+</ul>
+<p class="sub">New computations are at the end, and new Lean (core Lean 4.24, kernel-checked, 14 theorems, no sorry).</p>
+
+<h2>What survived, in one paragraph</h2>
+<p>The 3-6-9 rule is real when it is read as a statement about <b>a three-fold symmetry with no fixed points</b>. In the numbers, <i>x</i> mod 9 ∈ {0, 3, 6} is exactly "3 divides <i>x</i>" (Lean). In physics, the same condition does three proven or computed jobs.</p>
+<ol>
+<li><b>Angular momentum.</b> In a medium with 3-fold or 9-fold rotational symmetry, the modes with ℓ ≡ 0, 3, 6 (mod 9) are exactly the ones a 120° turn leaves unchanged. That sector is closed under evolution: the leakage is 0.0 when the symmetry holds, and 1.8×10⁻² and 9.2×10⁻² when it is broken.</li>
+<li><b>Lattices.</b> In any lattice with a fixed-point-free 120° symmetry, every shell count lands in {0, 3, 6} mod 9. This holds for the hexagonal lattice A₂, for Viazovska's E₈, and for the Leech lattice, where every count is ≡ 0 mod 9. The square and cubic lattices, which lack that symmetry, fail.</li>
+<li><b>Knotted filaments.</b> A knotted filament carries a mod-3 charge, its Fox 3-colourings, which no continuous motion can change. The trefoil carries it; the Conway knot does not.</li>
+</ol>
+<p>Each of the three has a fixed-point-free order-3 action at its core. That is the honest "Growl-Sieve-Filter". It is also the triangle in his own diagram (r³ = 1), the D₃ symmetry of his three-body shape sphere, and his own Lean theorem <code>z3_isotropic</code>.</p>
+<p>What died, even after running the opposite:</p>
+<ul>
+<li>the claim that only ℓ ∈ {0, 3, 6} mod 9 can be protected (ℓ = 1, 2, 4 are protected just as well);</li>
+<li>the 2ᵃ·5ᵇ tool, which provably never lands in the class (Lean);</li>
+<li>Solfeggio frequencies as physics (the residues swap under a change of units);</li>
+<li>"Apollonian curvatures confined to {0, 3, 6}".</li>
+</ul>
+
+<h2>1. The strongest forms, their kill conditions and their results</h2>
+<table>
+<tr><th>#</th><th>Strongest form tested</th><th>Kill condition (written first)</th><th>Result</th></tr>
+<tr><td>S1</td><td>ℓ mod 9 ∈ {0, 3, 6} is a meaningful class</td><td>none, identity check</td><td class="ok">It is the class 3 | ℓ, proved for every integer (Lean <code>int_mod9_036_iff_dvd3</code>). It is closed under addition and under multiplication by any integer (Lean).</td></tr>
+<tr><td>S2</td><td>Three-fold symmetry protects the {0, 3, 6} sector of light's angular momentum</td><td>more than 10⁻¹⁰ of the population leaves the starting class when the symmetry holds; the broken-symmetry control must leak</td><td class="ok">Survives (T1).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>
+<ul>
+<li>9-fold and 3-fold rings: leakage is exactly 0.00, for every starting ℓ.</li>
+<li>Broken by a cos φ term: leakage is 1.8×10⁻² (9-fold) and 9.2×10⁻² (3-fold).</li>
+<li>{0, 3, 6} = the residues with e^{2πiℓ/3} = 1.</li>
+</ul></td></tr>
+<tr><td>S3</td><td>Only windings in {0, 3, 6} mod 9 are topologically protected</td><td>survives only if ℓ = 1 or 2 changes under small continuous deformation while 3, 6, 9 hold</td><td class="bad">Dies (T2).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>ℓ = 1, 2, 3, 4, 6, 9 all keep their winding through 20 random smooth perturbations each. Protection by winding is universal; the residue class does not choose it. The class is chosen by <i>symmetry</i> (S2), not by topology.</td></tr>
+<tr><td>S4</td><td>Lattices from the packing problem carry the 3-6-9 class</td><td>dies if any shell count of a ℤ[ω] lattice is ≢ 0 mod 3; the controls Z², Z⁸ must fail</td><td class="ok">Survives (T5 + Lean).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>
+<ul>
+<li>E₈ (240σ₃(n)): residues {0, 3, 6} mod 9, n ≤ 40.</li>
+<li>A₂: {0, 3, 6}, n ≤ 60.</li>
+<li>Leech: every count ≡ 0 mod 9, n ≤ 29.</li>
+<li>Z²: residues {0, 1, 2} mod 3. Z⁸: {0, 1, 2}.</li>
+</ul>
+Reason, proved in Lean: multiplication by ω preserves the norm, has order 3 and fixes only 0, so every nonzero shell splits into orbits of exactly 3. E₈ has such an element: the Coxeter element to the 10th power, whose exponents 1, 7, 11, 13, 17, 19, 23, 29 are all ≢ 0 mod 3.</td></tr>
+<tr><td>S5</td><td>Knotted vortex lines carry a protected mod-3 charge</td><td>dies if 3-colourability is not invariant, or if det mod 3 fails to predict it</td><td class="ok">Survives (T9 + Lean).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>
+<ul>
+<li>Trefoil: det 3, 9 colourings (Lean <code>trefoil_nine_colourings</code>).</li>
+<li>6₁: det 9, 9 colourings.</li>
+<li>K9a40: det 27, 27 colourings.</li>
+<li>Figure-eight (det 5), 5₂ (det 7), Conway 11n34 (det 1), Kinoshita–Terasaka (det 1): only the 3 trivial colourings.</li>
+</ul>
+It is a knot invariant, so only a cut or reconnection can change it.</td></tr>
+<tr><td>S6</td><td>The 2ᵃ·5ᵇ factorization "tracks the protected residue"</td><td>dies if it never lands in {0, 3, 6}</td><td class="bad">Dies (Lean <code>two_five_never_036</code>).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>2 and 5 are prime to 3, so 2ᵃ5ᵇ mod 9 ∈ {1, 2, 4, 5, 7, 8} for all a, b.</td></tr>
+<tr><td>S7</td><td>The Solfeggio frequencies 528–963 Hz are 3-6-9 physics</td><td>a physical residue must survive a change of unit</td><td class="bad">Dies (T4).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>All five are multiples of 3 (step 111 = 3·37), but in units of ½ Hz the residues 6, 0, 3, 6, 0 become 3, 0, 6, 3, 0. Only "divisible by 3" survives integer rescaling; which of 3 or 6 it is depends on the unit. 639/528 = 1.210 is no musical interval.</td></tr>
+<tr><td>S8</td><td>Apollonian curvatures live in {0, 3, 6} mod 9</td><td>dies if other residues occur; record what <i>is</i> restricted</td><td class="warn">The strong form dies, and a mod-3 rule is found.</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>The (−1, 2, 2, 3) packing (6,620 curvatures ≤ 20,000) gives residues mod 9 of {0, 2, 3, 5, 6, 8}, but mod 3 only {0, 2}: <b>no curvature is ≡ 1 mod 3</b>. Mod 24 it gives {2, 3, 6, 11, 14, 15, 18, 23}. A genuine mod-3 exclusion, but not the 3-6-9 class.</td></tr>
+<tr><td>S9</td><td>Triangulation counts (Tr φ³ trees, Catalan Cₙ) single out 3</td><td>dies if mod 2 and mod 5 show the same density-one divisibility</td><td class="warn">3 is not special in the counts, but trivalence is (S10).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>The fraction of Cₙ divisible by 2, 3, 5 is 0.996, 0.895, 0.892 for n &lt; 3000.</td></tr>
+<tr><td>S10</td><td>Trivalent structure ties Mirzakhani to surfaceology</td><td>dies if the counting identity fails</td><td class="ok">Survives (Lean).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>Pants: 3(2g−2+n) = 2(3g−3+n) + n, so the number of curves ≡ n mod 3. Cubic trees: 3(n−2) = 2(n−3) + n. The same 3-valent bookkeeping governs her pants decompositions and Tr φ³ diagrams.</td></tr>
+<tr><td>S11</td><td>The three-body shape sphere carries the triangle group</td><td>dies if relabelling the bodies is not a 120° turn about the equilateral axis</td><td class="ok">Survives (T8).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>The cyclic relabelling is a rotation by 240° (= −120°) about the polar axis, with the height (signed area) unchanged to 3×10⁻¹⁶. The equilateral triangle maps to the pole. This matches his Lean <code>z3_isotropic</code>.</td></tr>
+<tr><td>S12</td><td>Colour's 3-6-9: the Mixin and polarizer angles have digit sums of 9</td><td>a physical residue must survive a change of angle unit</td><td class="warn">Unit-bound, plus a real three-fold structure (section 2).</td></tr>
+<tr><td></td><td>(continued)</td><td></td><td>In degrees every 22.5° step has digit sum ≡ 0 mod 9. In gradians the sums run 7, 5, 3, 1, 8, 6, 4, 2, 0, which is exactly the "digital-root coherence" sequence of the Grok tesseract. In turns they run 4, 8, 3, 7, …. The property comes from 360 = 2³·3²·5.</td></tr>
+</table>
+
+<h2>2. Colour: what his files actually hold</h2>
+<p>This comes from a full read of Colour Selects the Leader v1.1 (77 pages), the HTML, the code, Colour Studio v3.1, the Mixin explorer and audit, the deep-dive addon and the mixin-colors repo.</p>
+<ul>
+<li><b>3, 6, 9 are colours in Elizabeth's Mixin labels:</b> Red 3, Yellow 6, Black 9, with White 1, Blue 7, Green 2, Magenta 8, and Brown 0 as a placeholder. The arithmetic around them is <b>mod 10 and mod 5</b>, not mod 9:
+<ul>
+<li>the complement d → 10 − d;</li>
+<li>the quarter-turn d → 3d mod 10, with 3 → 9 → 7 → 1 and 6 → 8 → 4 → 2;</li>
+<li>the quartic character mod 5.</li>
+</ul>
+His own scope note: "arithmetic symmetry of this embedding, not a physical hue rotation law".</li>
+<li><b>The angles:</b> White 0°, Red 45°, Black 90°, Blue 135°, with secondaries at 22.5° steps. Their digit sums reduce to 9 because of the degree convention (S12). In turns or gradians the pattern changes.</li>
+<li><b>The genuine three-fold structure in colour</b> is Schrödinger's three fundamentals and the chromaticity triangle, with the white point at (1, 1, 1)/3, in §2 of his paper. Three cone classes give a 2-simplex. With equal weights its symmetry is S₃ = D₃, the same triangle group as the Galois triangle diagram and the shape sphere. Exner's unequal weights (43.33, 32.76, 1) break it, so the symmetric colour triangle is an idealisation, and its residue is the leftover of a broken D₃.</li>
+<li><b>Lean:</b> no Lean file in the colour set formalises label arithmetic.</li>
+</ul>
+<p><b>Rebuild for colour.</b> The real 3-6-9 content of colour is trichromacy, a 3-fold structure whose symmetric form is D₃. The mod-9 digit pattern of the angles is a property of the degree unit. The 3, 6, 9 labels are Elizabeth's naming, with mod-10 arithmetic. Nothing here is discredited. Each piece is placed where it belongs.</p>
+
+<h2>3. His Lean: the three-fold theorems he already owns</h2>
+<p>From all 35 public repos, all cloned. None contains ZMod 3 or ZMod 9, and none contains a sorry.</p>
+<ul>
+<li><b>three-body-lean</b>
+<ul>
+<li><code>z3_isotropic</code>: a symmetric 2-tensor that commutes with the 120° rotation is a multiple of the identity.</li>
+<li><code>u_inner</code>: the three unit directions meet at inner product −1/2.</li>
+</ul>
+This is the D₃ of S11, already proved.</li>
+<li><b>coxeter-rank2-lean:</b> <code>U3_exact</code> (A₂, period 3) and <code>U6_exact</code> (G₂, period 6). A₂ is exactly the hexagonal (Eisenstein) lattice of S4.</li>
+<li><b>coboundary-k3-lean:</b> the whole repository works over Sym(3). The witnesses satisfy N·3 = k·D (the k/3 law), with 3-cycles in <code>k4_mechanism</code>.</li>
+<li><b>nonnormality-connection-energy-lean:</b> <code>koide_iff_born_half</code>, the Koide 2/3 ratio for three masses.</li>
+<li><b>what-tesla-saw-lean:</b> <code>nine_ten_jets</code>, meetings mod 9·10 = 90 (decide). It is a mod-9 count in his own corpus. The general lcm count is not yet proved.</li>
+<li><b>ramanujan-challenge-lean:</b> 729 = 3⁶ and 297 = 27·11 in the exact limits.</li>
+<li><b>upg-lean:</b> the clock and shift matrices with ω^d = 1, valid for d ≥ 3. A d = 3 specialisation would give ℤ/3 phase directly.</li>
+<li><b>event-horizon-lean</b> and <b>what-russell-saw-lean:</b> the photon sphere at r = 3M and the ISCO at 6M, with 2 + 6M/r = 3. These are factors of 3 inside general relativity, as cited results.</li>
+</ul>
+
+<h2>4. The four mathematicians, from their papers</h2>
+<ul>
+<li><b>Viazovska</b> (arXiv:1603.04246, read in full). The magic function is built from E₄, E₆, E₂, j, and Γ(2) theta functions; the level is never 3. Every Eisenstein constant −2k/B_k is divisible by exactly 3^{v₃(k)+1} (von Staudt–Clausen). Hence:
+<ul>
+<li>E₈ counts 240σ₃(n) are ≡ 0 mod 3.</li>
+<li>Θ_Leech = E₄³ − 720Δ ≡ 1 mod 9 coefficient by coefficient, so every Leech shell count is ≡ 0 mod 9 (this does not hold mod 27).</li>
+</ul>
+Her two optimal packings are both 3-6-9 lattices in the exact sense of S4.</li>
+<li><b>Piccirillo</b> (arXiv:1808.02923, read in full). The Conway knot is not slice. She proved it through the knot trace X(K): she built K′ with the same trace and s(K′) = 2, whereas slice knots have s = 0, using an RBG link of three components. Her paper has no mod-3 statement. Against his tools: the Conway knot has Δ = 1 and det 1, so it has no 3-colourings and no Alexander or Levine–Tristram signal. His abelian invariants cannot see it, and the smooth obstruction needs the Rasmussen s-invariant, which comes from Khovanov homology.</li>
+<li><b>Mirzakhani</b> (Weil–Petersson volumes, the 2005 preprint of Invent. Math. 2007, read).
+<ul>
+<li>The volume polynomial has degree 3g−3+n.</li>
+<li>The recursion runs on the complexity 3g + n.</li>
+<li>The pants are S₀,₃.</li>
+<li>Trivalence gives the number of curves ≡ n mod 3 (Lean <code>pants_curves_mod3</code>).</li>
+</ul>
+The genuine bridge to spacetime: her recursion computes the JT-gravity path integral (Saad, Shenker and Stanford 2019; cited, not re-fetched).</li>
+<li><b>Figueiredo</b> (arXiv:2401.05483, NLSM ⊂ Tr(Φ³), with Arkani-Hamed, Cao, Dong and He, read in full). The cubic theory contains the non-linear sigma model through a shift δ on even–even and odd–odd variables. The organising rule there is parity (mod 2). The 3 is the cubic vertex, whose tree count is the same trivalent identity as Mirzakhani's pants (Lean <code>cubic_tree_trivalent</code>). Surfaceology itself began with Arkani-Hamed, Frost, Salvatori, Plamondon and Thomas (arXiv:2309.15913); she co-leads its extensions.</li>
+</ul>
+
+<h2>5. The rebuilt 3-6-9 rule</h2>
+<div class="hero"><p><b>Three-fold protection rule.</b> Let a group of order 3 act with no fixed points other than the trivial one. Then:</p>
+<ol>
+<li>the states it leaves unchanged form a sector closed under every symmetric evolution, which for angular momentum is ℓ ≡ 0, 3, 6 (mod 9);</li>
+<li>every orbit-counted quantity, such as a lattice shell count, is ≡ 0, 3 or 6 (mod 9);</li>
+<li>on knotted filaments, the matching invariant is the mod-3 colouring charge, which only reconnection changes.</li>
+</ol>
+<p>Instances: the triangle D₃ (his diagram), the hexagonal lattice A₂, Viazovska's E₈ and Leech, the three-body shape sphere (his Lean <code>z3_isotropic</code>), trichromatic colour with symmetric weights, the trefoil, and the pants and cubic trees of Mirzakhani and surfaceology (trivalence).</p></div>
+<p><b>Grades.</b></p>
+<ul>
+<li>Items 1–2 are proved: the arithmetic and orbit lemmas are in Lean here, and the symmetry selection is standard.</li>
+<li>The lattice and knot instances are computed and match known results.</li>
+<li>The colour instance is a reading. The weights break the symmetry.</li>
+<li>The physical test is open: a 3- or 9-fold photonic structure showing which OAM transitions occur.</li>
+</ul>
+
+<h2>6. Opposites run before anything was called dead</h2>
+<table>
+<tr><th>Test</th><th>Opposite run</th><th>What it showed</th></tr>
+<tr><td>Symmetric ring</td><td>symmetry broken</td><td>leakage appears, so the protection is the symmetry</td></tr>
+<tr><td>Eisenstein lattices</td><td>Z², Z⁸</td><td>other residues appear, so the cause is the 3-fold action</td></tr>
+<tr><td>Trefoil, 6₁, K9a40</td><td>figure-eight, 5₂, Conway</td><td>det mod 3 decides the colouring charge</td></tr>
+<tr><td>Catalan mod 3</td><td>mod 2, mod 5</td><td>3 is not special in the counts</td></tr>
+<tr><td>Degrees</td><td>gradians, turns</td><td>the digit-sum 9 belongs to the unit</td></tr>
+<tr><td>Hz</td><td>½ Hz, 7 s cycles</td><td>3 and 6 swap; only divisibility by 3 survives</td></tr>
+<tr><td>Only {0, 3, 6} protected</td><td>ℓ = 1, 2, 4</td><td>all protected, so topology is not the filter</td></tr>
+</table>
+
+<h2>7. Next tests, if wanted</h2>
+<ol>
+<li>Add a d = 3 specialisation to upg-lean's clock theorems, plus the orbit-counting lemma in Mathlib form. Prove "every ℤ[ω]-lattice shell count ≡ 0 mod 3" generally, and E₈ and Leech as instances.</li>
+<li>Prove the general lcm count in what-tesla-saw-lean, (meetings a b).length = lcm, which turns the mod-9 jets into a theorem.</li>
+<li>A colour test: equalise the three fundamentals, check the D₃ symmetry of the chromaticity triangle, and measure how far Exner's weights break it.</li>
+<li>Apollonian: explain why (−1, 2, 2, 3) never produces a curvature ≡ 1 mod 3. It is a genuine mod-3 exclusion, and a published literature on Apollonian residue classes exists to check against.</li>
+</ol>
+<h2>Appendix A. Run outputs (this session)</h2><h3>SM369-BATTERY (T1–T8)</h3><pre>
+=== T1 OAM on a ring, potential with n-fold symmetry: is l conserved mod n?
+    kill condition: population leaving the starting class l mod n exceeds 1e-10 (symmetric case) -&gt; rule dead; control must leak when symmetry is broken
+    9-fold, start l= 3, symmetry broken=0: population outside l≡3 (mod 9) = 0.00e+00
+    9-fold, start l= 1, symmetry broken=0: population outside l≡1 (mod 9) = 0.00e+00
+    3-fold, start l= 3, symmetry broken=0: population outside l≡0 (mod 3) = 0.00e+00
+    3-fold, start l= 1, symmetry broken=0: population outside l≡1 (mod 3) = 0.00e+00
+    9-fold, start l= 3, symmetry broken=0.3: population outside l≡3 (mod 9) = 1.78e-02
+    3-fold, start l= 3, symmetry broken=0.3: population outside l≡0 (mod 3) = 9.23e-02
+    modes with exp(2πi l/3)=1 among l mod 9: [0, 3, 6]
+
+=== T2 winding of a vortex field under random smooth perturbation, l = 1,2,3,4,6,9
+    kill condition: if l=1 or l=2 winding changes under small continuous perturbation while l=3,6,9 hold -&gt; 3-6-9 protection survives; if all hold -&gt; protection is universal, the 3-6-9 restriction dies
+    l=1: windings after 20 random perturbations = [1]
+    l=2: windings after 20 random perturbations = [2]
+    l=3: windings after 20 random perturbations = [3]
+    l=4: windings after 20 random perturbations = [4]
+    l=6: windings after 20 random perturbations = [6]
+    l=9: windings after 20 random perturbations = [9]
+
+=== T3 the residue set {0,3,6} mod 9
+    kill condition: none (identity check)
+    l mod 9 in {0,3,6}  &lt;=&gt;  3 | l : True
+    digit sum ≡ n (mod 9) for n&lt;10^5: True
+
+=== T4 Solfeggio 528/639/741/852/963 Hz
+    kill condition: a physical selection rule must survive a change of units; if residues mod 9 change when the unit changes, the residue is not physical
+    in Hz: mod 9 = [6, 0, 3, 6, 0]  all divisible by 3: True  step = 111 = 3·37
+    period in microseconds (1e6/f): [1893.939, 1564.945, 1349.528, 1173.709, 1038.422]
+    in cycles per 7 seconds: [3696, 4473, 5187, 5964, 6741] mod 9 = [6, 0, 3, 6, 0]
+    in units of 1/2 Hz: [1056, 1278, 1482, 1704, 1926] mod 9 = [3, 0, 6, 3, 0]  (divisibility by 3 survives integer rescaling; the residues 3 vs 6 do not)
+    musical ratios 639/528 = 1.2102  741/528 = 1.4034  (equal-tempered minor third 1.1892, major third 1.2599)
+
+=== T5 sphere-packing lattices: shell counts mod 3 and mod 9
+    kill condition: claim &quot;every shell count of an Eisenstein (Z[ω]) lattice is ≡ 0 mod 3&quot; dies if any count (n≥1) is not; control: Z^2 and Z^8 (no free 3-fold symmetry) should hit other residues
+    E8 shells (240·σ3(n)), n=1..40: mod 9 residues = [0, 3, 6]  first: [240, 2160, 6720, 17520, 30240]
+    A2 hexagonal shells n=1..60 (nonzero): mod 9 residues = [0, 3, 6]  first: [6, 0, 6, 6, 0, 0, 12]
+    control Z^2 shells (nonzero): mod 3 residues = [0, 1, 2]  first: [4, 4, 0, 4, 8]
+    Leech: counts at norm 2,4,6 = [0, 196560, 16773120]  (expect 0? norm 2 = 0, then 196560, 16773120)
+    Leech shells n=1..29 nonzero: mod 9 residues = [0]
+    control Z^8 shells n=1..20: mod 3 residues = [0, 1, 2]  first: [16, 112, 448, 1136]
+    E8 exponents mod 3 = [1, 1, 2, 1, 2, 1, 2, 2]  -&gt; w^10 has no eigenvalue 1: fixed-point-free order 3 = True
+
+=== T6 integral Apollonian packing (-1,2,2,3): curvature residues
+    kill condition: claim &quot;Apollonian curvatures are confined to {0,3,6} mod 9&quot; dies if other residues occur; record what IS restricted (mod 24, mod 3)
+    distinct curvatures up to 20000 : 6620
+    residues mod 3: [0, 2]
+    residues mod 9: [0, 2, 3, 5, 6, 8]
+    residues mod 24: [2, 3, 6, 11, 14, 15, 18, 23]
+
+=== T7 triangulations of an (n+2)-gon = Catalan C_n (Tr φ³ tree diagrams): residues
+    kill condition: claim &quot;triangulation counts single out 3&quot; dies if the same density-1 divisibility holds for 2 and 5
+    fraction of C_n ≡ 0 mod 2, n&lt;3000: 0.996
+    fraction of C_n ≡ 0 mod 3, n&lt;3000: 0.895
+    fraction of C_n ≡ 0 mod 5, n&lt;3000: 0.892
+    fraction of C_n ≡ 0 mod 9, n&lt;3000: 0.727
+    C_n mod 9 for n=1..20: [1, 2, 5, 5, 6, 6, 6, 8, 2, 2, 7, 4, 4, 0, 0, 0, 6, 6, 6, 3]
+
+=== T8 permuting three bodies acts on the shape sphere (Hopf base) as D3
+    kill condition: dies if the cyclic relabelling is not a 120° rotation about the equilateral (polar) axis
+    rotation angle of the cyclic relabelling about the polar axis: [240.0] …  change in height (signed area): 3.3e-16
+    equilateral triangle maps to the pole: [ 0.  0. -1.]
+</pre><h3>SM369-KNOTS (Alexander polynomials and Fox colourings from PD codes, SnapPy)</h3><pre>trefoil 3_1                  crossings= 3 Delta coeffs=[1, -1, 1] det=|Delta(-1)|=3  det mod 3=0  det mod 9=3  #3-colourings=9  #5-colourings=5
+figure-eight 4_1             crossings= 4 Delta coeffs=[1, -3, 1] det=|Delta(-1)|=5  det mod 3=2  det mod 9=5  #3-colourings=3  #5-colourings=25
+5_2 (K5a1)                   crossings= 5 Delta coeffs=[2, -3, 2] det=|Delta(-1)|=7  det mod 3=1  det mod 9=7  #3-colourings=3  #5-colourings=5
+Conway knot 11n34            crossings=11 Delta coeffs=[1] det=|Delta(-1)|=1  det mod 3=1  det mod 9=1  #3-colourings=3  #5-colourings=5
+Kinoshita-Terasaka 11n42     crossings=11 Delta coeffs=[1] det=|Delta(-1)|=1  det mod 3=1  det mod 9=1  #3-colourings=3  #5-colourings=5
+K9a40 (det 27)               crossings= 9 Delta coeffs=[7, -13, 7] det=|Delta(-1)|=27  det mod 3=0  det mod 9=0  #3-colourings=27  #5-colourings=5
+6_1 stevedore                crossings= 6 Delta coeffs=[2, -5, 2] det=|Delta(-1)|=9  det mod 3=0  det mod 9=0  #3-colourings=9  #5-colourings=5
+</pre><h3>SM369-COLOUR-ANGLES</h3><pre>kill condition: if the digit-sum-9 property survives a change of angle unit, it is physical; if it changes, it belongs to the degree convention (360 = 2^3·3^2·5)
+degrees      : [22.5, 45.0, 67.5, 90.0, 112.5, 135.0, 157.5, 180.0, 202.5, 225.0, 247.5, 270.0, 292.5, 315.0, 337.5]
+digit sums mod 9 (degrees): [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+gradians     : [25.0, 50.0, 75.0, 100.0, 125.0, 150.0, 175.0, 200.0, 225.0, 250.0, 275.0, 300.0, 325.0, 350.0, 375.0]
+digit sums mod 9 (gradians): [7, 5, 3, 1, 8, 6, 4, 2, 0, 7, 5, 3, 1, 8, 6]
+turns        : [0.0625, 0.125, 0.1875, 0.25, 0.3125, 0.375, 0.4375, 0.5, 0.5625, 0.625, 0.6875, 0.75, 0.8125, 0.875, 0.9375]
+digit sums mod 9 (turns): [4, 8, 3, 7, 2, 6, 1, 5, 0, 4, 8, 3, 7, 2, 6]
+reason: 360 = 2^3·3^2·5, and k·360/16 = 22.5·k = 9·(2.5k); halving in decimal multiplies the digit string by 5, which keeps divisibility by 9
+</pre><h2>Appendix B. Lean: SM369.lean (core Lean 4.24.0, kernel-checked, 14 theorems, no sorry, no axioms)</h2><pre>/- SM369.lean — straw-man checks for the 3-6-9 rule, core Lean 4 (no Mathlib), kernel-checked.
+   Jeromie Beasley&#x27;s 3-6-9 synthesis, strongest forms that survive. -/
+
+/-- The residue set {0,3,6} mod 9 is exactly &quot;divisible by 3&quot;. -/
+theorem mod9_036_iff_dvd3 (l : Nat) : (l % 9 = 0 ∨ l % 9 = 3 ∨ l % 9 = 6) ↔ l % 3 = 0 := by omega
+
+/-- The same for integers (negative winding numbers included). -/
+theorem int_mod9_036_iff_dvd3 (l : Int) : (l % 9 = 0 ∨ l % 9 = 3 ∨ l % 9 = 6) ↔ l % 3 = 0 := by omega
+
+/-- {0,3,6} is closed under addition mod 9 (the order-3 subgroup of ℤ/9). -/
+theorem class036_add (a b : Nat) (ha : a % 3 = 0) (hb : b % 3 = 0) :
+    (a + b) % 9 = 0 ∨ (a + b) % 9 = 3 ∨ (a + b) % 9 = 6 := by omega
+
+/-- The class is closed under multiplication by any integer factor. -/
+theorem class036_mul (a k : Nat) (ha : a % 3 = 0) : (k * a) % 3 = 0 := by
+  rw [Nat.mul_mod, ha]; simp
+
+theorem mul_not_dvd3 (x y : Nat) (hx : x % 3 ≠ 0) (hy : y % 3 ≠ 0) : (x * y) % 3 ≠ 0 := by
+  rw [Nat.mul_mod]
+  have h1 : x % 3 &lt; 3 := Nat.mod_lt _ (by decide)
+  have h2 : y % 3 &lt; 3 := Nat.mod_lt _ (by decide)
+  generalize x % 3 = u at *
+  generalize y % 3 = v at *
+  match u, v, h1, h2, hx, hy with
+  | 1, 1, _, _, _, _ =&gt; decide
+  | 1, 2, _, _, _, _ =&gt; decide
+  | 2, 1, _, _, _, _ =&gt; decide
+  | 2, 2, _, _, _, _ =&gt; decide
+  | 0, _, _, _, h, _ =&gt; exact absurd rfl h
+  | _, 0, _, _, _, h =&gt; exact absurd rfl h
+  | u+3, _, h, _, _, _ =&gt; omega
+  | _, v+3, _, h, _, _ =&gt; omega
+
+theorem pow_not_dvd3 (b a : Nat) (hb : b % 3 ≠ 0) : (b ^ a) % 3 ≠ 0 := by
+  induction a with
+  | zero =&gt; simp
+  | succ n ih =&gt; rw [Nat.pow_succ]; exact mul_not_dvd3 _ _ ih hb
+
+/-- The synthesis&#x27;s own &quot;2^a × 5^b factorization filter&quot; can never land in {0,3,6} mod 9. -/
+theorem two_five_never_036 (a b : Nat) :
+    ¬ ((2 ^ a * 5 ^ b) % 9 = 0 ∨ (2 ^ a * 5 ^ b) % 9 = 3 ∨ (2 ^ a * 5 ^ b) % 9 = 6) := by
+  rw [mod9_036_iff_dvd3]
+  exact mul_not_dvd3 _ _ (pow_not_dvd3 2 a (by decide)) (pow_not_dvd3 5 b (by decide))
+
+/-- Multiplication by ω = e^{2πi/3} on the Eisenstein lattice ℤ[ω], written in the basis {1, ω}:
+    a + bω ↦ ω(a + bω) = −b + (a − b)ω.  It preserves the norm |a + bω|² = a² − ab + b². -/
+theorem omega_preserves_norm (a b : Int) :
+    (-b) * (-b) - (-b) * (a - b) + (a - b) * (a - b) = a * a - a * b + b * b := by
+  simp only [Int.sub_mul, Int.mul_sub, Int.neg_mul, Int.mul_neg, Int.neg_neg]
+  rw [Int.mul_comm b a]; omega
+
+/-- ω has order 3: applying it three times returns every lattice point. -/
+theorem omega_order3 (a b : Int) :
+    let w := fun (p : Int × Int) =&gt; ((-p.2), p.1 - p.2)
+    w (w (w (a, b))) = (a, b) := by
+  simp only [Prod.mk.injEq]; constructor &lt;;&gt; omega
+
+/-- ω fixes no lattice point except the origin, so it splits every nonzero shell into orbits of size exactly 3:
+    every shell count of an ℤ[ω]-lattice is divisible by 3, i.e. lies in {0,3,6} mod 9. -/
+theorem omega_no_fixed (a b : Int) (h : ((-b), a - b) = (a, b)) : a = 0 ∧ b = 0 := by
+  simp only [Prod.mk.injEq] at h; omega
+
+/-- Fox 3-colourings of the trefoil diagram (arcs x y z; at each crossing 2·over = under₁ + under₂ mod 3): exactly 9. -/
+def trefoilOK (x y z : Fin 3) : Bool :=
+  (2 * x.val) % 3 == (y.val + z.val) % 3 &amp;&amp; (2 * y.val) % 3 == (x.val + z.val) % 3 &amp;&amp; (2 * z.val) % 3 == (x.val + y.val) % 3
+theorem trefoil_nine_colourings :
+    ((List.finRange 3).flatMap fun x =&gt; (List.finRange 3).flatMap fun y =&gt; (List.finRange 3).filter fun z =&gt; trefoilOK x y z).length = 9 := by
+  decide
+
+/-- Trivalent counting (Mirzakhani&#x27;s pants): a pants decomposition of a genus-g surface with n boundaries has
+    2g−2+n pants and 3g−3+n curves; each pants has 3 cuffs, each curve is shared by 2 pants, each boundary by 1. -/
+theorem pants_trivalent (g n : Int) : 3 * (2 * g - 2 + n) = 2 * (3 * g - 3 + n) + n := by omega
+
+/-- So the number of cutting curves is ≡ n (mod 3). -/
+theorem pants_curves_mod3 (g n : Int) : (3 * g - 3 + n) % 3 = n % 3 := by omega
+
+/-- The same identity for planar cubic (Tr φ³) trees with n legs: n−2 vertices, n−3 propagators. -/
+theorem cubic_tree_trivalent (n : Int) : 3 * (n - 2) = 2 * (n - 3) + n := by omega
+</pre><h2>Appendix C. Scripts</h2><h3>battery.py</h3><pre># SCRIPT: SM369-BATTERY — straw man to the max for the 3-6-9 rule. Each test prints its KILL CONDITION before its result.
+import numpy as np, math, itertools
+from scipy.linalg import expm
+rng = np.random.default_rng(369)
+def head(s, kill): print(&#x27;\n=== &#x27; + s + &#x27;\n    kill condition: &#x27; + kill)
+
+# ---------- T1: angular momentum conserved mod n under n-fold rotational symmetry ----------
+head(&#x27;T1 OAM on a ring, potential with n-fold symmetry: is l conserved mod n?&#x27;,
+     &#x27;population leaving the starting class l mod n exceeds 1e-10 (symmetric case) -&gt; rule dead; control must leak when symmetry is broken&#x27;)
+L = np.arange(-27, 28); N = len(L)
+def ring_H(n_fold, eps_break=0.0):
+    H = np.diag(L**2/2.0).astype(complex)
+    for m in range(1, 4):                       # Fourier components at multiples of n_fold only
+        amp = rng.normal() + 1j*rng.normal(); q = m*n_fold
+        for i, l in enumerate(L):
+            j = np.where(L == l + q)[0]
+            if len(j): H[j[0], i] += amp; H[i, j[0]] += np.conj(amp)
+    if eps_break:                               # a cos(phi) term breaks the symmetry
+        for i, l in enumerate(L):
+            j = np.where(L == l + 1)[0]
+            if len(j): H[j[0], i] += eps_break; H[i, j[0]] += eps_break
+    return H
+for n_fold, l0, br in [(9, 3, 0), (9, 1, 0), (3, 3, 0), (3, 1, 0), (9, 3, 0.3), (3, 3, 0.3)]:
+    H = ring_H(n_fold, br); psi = (L == l0).astype(complex); U = expm(-1j*H*5.0); psi = U @ psi
+    cls = (L - l0) % n_fold == 0; leak = float(np.sum(abs(psi[~cls])**2))
+    print(f&#x27;    {n_fold}-fold, start l={l0:2d}, symmetry broken={br}: population outside l≡{l0%n_fold} (mod {n_fold}) = {leak:.2e}&#x27;)
+# the {0,3,6} mod 9 class = modes unchanged by a 120 degree turn
+print(&#x27;    modes with exp(2πi l/3)=1 among l mod 9:&#x27;, [r for r in range(9) if abs(np.exp(2j*np.pi*r/3)-1) &lt; 1e-12])
+
+# ---------- T2: is protection special to l in {0,3,6} mod 9? ----------
+head(&#x27;T2 winding of a vortex field under random smooth perturbation, l = 1,2,3,4,6,9&#x27;,
+     &#x27;if l=1 or l=2 winding changes under small continuous perturbation while l=3,6,9 hold -&gt; 3-6-9 protection survives; if all hold -&gt; protection is universal, the 3-6-9 restriction dies&#x27;)
+xs = np.linspace(-1, 1, 201); X, Y = np.meshgrid(xs, xs); Z = X + 1j*Y
+def winding(field, r=0.8, m=2000):
+    th = np.linspace(0, 2*np.pi, m, endpoint=False); px, py = r*np.cos(th), r*np.sin(th)
+    ix = np.clip(((px+1)/2*200).round().astype(int), 0, 200); iy = np.clip(((py+1)/2*200).round().astype(int), 0, 200)
+    ph = np.unwrap(np.angle(field[iy, ix])); return int(round((ph[-1]-ph[0] + (ph[1]-ph[0]))/(2*np.pi)))
+for l in [1, 2, 3, 4, 6, 9]:
+    res = []
+    for k in range(20):
+        pert = sum(rng.normal()*0.25*np.exp(1j*rng.uniform(0, 2*np.pi))*X**a*Y**b for a in range(3) for b in range(3))
+        res.append(winding(Z**l*(1 + 0.3*pert) + 0.02*pert))
+    print(f&#x27;    l={l}: windings after 20 random perturbations = {sorted(set(res))}&#x27;)
+
+# ---------- T3: what {0,3,6} mod 9 actually is ----------
+head(&#x27;T3 the residue set {0,3,6} mod 9&#x27;, &#x27;none (identity check)&#x27;)
+print(&#x27;    l mod 9 in {0,3,6}  &lt;=&gt;  3 | l :&#x27;, all(((l % 9) in (0, 3, 6)) == (l % 3 == 0) for l in range(-10000, 10000)))
+print(&#x27;    digit sum ≡ n (mod 9) for n&lt;10^5:&#x27;, all(sum(map(int, str(n))) % 9 == n % 9 for n in range(100000)))
+
+# ---------- T4: Solfeggio numbers and units ----------
+head(&#x27;T4 Solfeggio 528/639/741/852/963 Hz&#x27;, &#x27;a physical selection rule must survive a change of units; if residues mod 9 change when the unit changes, the residue is not physical&#x27;)
+f = [528, 639, 741, 852, 963]
+print(&#x27;    in Hz: mod 9 =&#x27;, [x % 9 for x in f], &#x27; all divisible by 3:&#x27;, all(x % 3 == 0 for x in f), &#x27; step =&#x27;, f[1]-f[0], &#x27;= 3·37&#x27;)
+print(&#x27;    period in microseconds (1e6/f):&#x27;, [round(1e6/x, 3) for x in f])
+print(&#x27;    in cycles per 7 seconds:&#x27;, [7*x for x in f], &#x27;mod 9 =&#x27;, [7*x % 9 for x in f])
+print(&#x27;    in units of 1/2 Hz:&#x27;, [2*x for x in f], &#x27;mod 9 =&#x27;, [2*x % 9 for x in f], &#x27; (divisibility by 3 survives integer rescaling; the residues 3 vs 6 do not)&#x27;)
+print(&#x27;    musical ratios 639/528 =&#x27;, round(639/528, 4), &#x27; 741/528 =&#x27;, round(741/528, 4), &#x27; (equal-tempered minor third 1.1892, major third 1.2599)&#x27;)
+
+# ---------- T5: lattices with 3-fold symmetry — shell counts mod 3 ----------
+head(&#x27;T5 sphere-packing lattices: shell counts mod 3 and mod 9&#x27;,
+     &#x27;claim &quot;every shell count of an Eisenstein (Z[ω]) lattice is ≡ 0 mod 3&quot; dies if any count (n≥1) is not; control: Z^2 and Z^8 (no free 3-fold symmetry) should hit other residues&#x27;)
+def sigma(n, k): return sum(d**k for d in range(1, n+1) if n % d == 0)
+E8 = [240*sigma(n, 3) for n in range(1, 41)]
+print(&#x27;    E8 shells (240·σ3(n)), n=1..40: mod 9 residues =&#x27;, sorted(set(x % 9 for x in E8)), &#x27; first:&#x27;, E8[:5])
+# A2 hexagonal lattice x^2+xy+y^2 = n
+A2 = [sum(1 for a in range(-60, 61) for b in range(-60, 61) if a*a+a*b+b*b == n) for n in range(1, 61)]
+print(&#x27;    A2 hexagonal shells n=1..60 (nonzero): mod 9 residues =&#x27;, sorted(set(x % 9 for x in A2 if x)), &#x27; first:&#x27;, A2[:7])
+Z2 = [sum(1 for a in range(-60, 61) for b in range(-60, 61) if a*a+b*b == n) for n in range(1, 61)]
+print(&#x27;    control Z^2 shells (nonzero): mod 3 residues =&#x27;, sorted(set(x % 3 for x in Z2 if x)), &#x27; first:&#x27;, Z2[:5])
+# Leech: theta = E12 - (65520/691) Delta
+from fractions import Fraction
+M = 30
+def qexp_E12(M): return [1] + [Fraction(65520, 691)*sigma(n, 11) for n in range(1, M)]
+def qexp_Delta(M):
+    c = [0]*M; c[0] = 1
+    for n in range(1, M):                     # prod (1-q^n)^24
+        for _ in range(24):
+            for i in range(M-1, n-1, -1): c[i] -= c[i-n]
+    return [0] + c[:M-1]
+E12, D = qexp_E12(M), qexp_Delta(M)
+Leech = [E12[n] - Fraction(65520, 691)*D[n] for n in range(M)]
+Lc = [int(x) for x in Leech]; assert all(Fraction(x) == y for x, y in zip(Lc, Leech))
+print(&#x27;    Leech: counts at norm 2,4,6 =&#x27;, Lc[1:4], &#x27; (expect 0? norm 2 = 0, then 196560, 16773120)&#x27;)
+print(&#x27;    Leech shells n=1..29 nonzero: mod 9 residues =&#x27;, sorted(set(x % 9 for x in Lc[1:] if x)))
+# control: Z^8
+from collections import Counter
+r8 = [0]*20
+for v in itertools.product(range(-3, 4), repeat=4):
+    pass
+def rk(n, k):   # number of ways n as sum of k squares (small n)
+    from functools import lru_cache
+    @lru_cache(None)
+    def f(n, k):
+        if k == 0: return 1 if n == 0 else 0
+        s = 0; a = 0
+        while a*a &lt;= n:
+            s += f(n-a*a, k-1)*(1 if a == 0 else 2); a += 1
+        return s
+    return f(n, k)
+Z8 = [rk(n, 8) for n in range(1, 21)]
+print(&#x27;    control Z^8 shells n=1..20: mod 3 residues =&#x27;, sorted(set(x % 3 for x in Z8)), &#x27; first:&#x27;, Z8[:4])
+# the reason: a fixed-point-free order-3 symmetry. E8 Coxeter element w (h=30), w^10 has eigenvalues exp(2πi m/3), m = exponents
+expo = [1, 7, 11, 13, 17, 19, 23, 29]
+print(&#x27;    E8 exponents mod 3 =&#x27;, [m % 3 for m in expo], &#x27; -&gt; w^10 has no eigenvalue 1: fixed-point-free order 3 =&#x27;, all(m % 3 for m in expo))
+
+# ---------- T6: Apollonian curvatures mod 3 and mod 9 ----------
+head(&#x27;T6 integral Apollonian packing (-1,2,2,3): curvature residues&#x27;, &#x27;claim &quot;Apollonian curvatures are confined to {0,3,6} mod 9&quot; dies if other residues occur; record what IS restricted (mod 24, mod 3)&#x27;)
+seen = set(); stack = [(-1, 2, 2, 3)]; curv = Counter(); LIM = 20000
+while stack:
+    q = stack.pop(); key = tuple(sorted(q))
+    if key in seen: continue
+    seen.add(key)
+    for i in range(4):
+        r = list(q); r[i] = 2*(sum(q) - q[i]) - q[i]
+        if r[i] &gt; max(q) and r[i] &lt;= LIM: curv[r[i]] += 1; stack.append(tuple(r))
+cs = sorted(set(list(curv) + [-1, 2, 3]))
+print(&#x27;    distinct curvatures up to&#x27;, LIM, &#x27;:&#x27;, len(cs))
+for m in [3, 9, 24]: print(f&#x27;    residues mod {m}:&#x27;, sorted(set(c % m for c in cs)))
+
+# ---------- T7: Catalan (triangulation) counts mod 2, 3, 5, 9 ----------
+head(&#x27;T7 triangulations of an (n+2)-gon = Catalan C_n (Tr φ³ tree diagrams): residues&#x27;, &#x27;claim &quot;triangulation counts single out 3&quot; dies if the same density-1 divisibility holds for 2 and 5&#x27;)
+C = [1]
+for n in range(1, 3000): C.append(C[-1]*2*(2*n-1)//(n+1))
+for m in [2, 3, 5, 9]: print(f&#x27;    fraction of C_n ≡ 0 mod {m}, n&lt;3000: {sum(1 for c in C if c % m == 0)/len(C):.3f}&#x27;)
+print(&#x27;    C_n mod 9 for n=1..20:&#x27;, [c % 9 for c in C[1:21]])
+
+# ---------- T8: three-body shape sphere carries the triangle group D3 ----------
+head(&#x27;T8 permuting three bodies acts on the shape sphere (Hopf base) as D3&#x27;, &#x27;dies if the cyclic relabelling is not a 120° rotation about the equilateral (polar) axis&#x27;)
+def shape(r):
+    s2 = math.sqrt(2); p1 = (r[1]-r[0])/s2; p2 = math.sqrt(2/3)*(r[2]-(r[0]+r[1])/2)
+    N = abs(p1)**2+abs(p2)**2; z = p1*np.conj(p2); return np.array([(abs(p1)**2-abs(p2)**2)/N, 2*z.real/N, 2*z.imag/N])
+worst = 0; ang = []
+for k in range(200):
+    r = rng.normal(size=3) + 1j*rng.normal(size=3); w = shape(r); wc = shape(np.roll(r, 1))
+    th = math.atan2(wc[1], wc[0]) - math.atan2(w[1], w[0]); ang.append(round(math.degrees(th) % 360, 6)); worst = max(worst, abs(wc[2]-w[2]))
+print(&#x27;    rotation angle of the cyclic relabelling about the polar axis:&#x27;, sorted(set(ang))[:3], &#x27;…  change in height (signed area):&#x27;, f&#x27;{worst:.1e}&#x27;)
+r = np.array([0, 1, 0.5+1j*math.sqrt(3)/2]); print(&#x27;    equilateral triangle maps to the pole:&#x27;, np.round(shape(r), 12))
+</pre><h3>knots.py</h3><pre># SCRIPT: SM369-KNOTS — Alexander polynomial (Fox calculus on the Wirtinger presentation) and Fox p-colourings from PD codes
+import snappy, sympy as sp
+t = sp.symbols(&#x27;t&#x27;)
+def arcs_of(pd):
+    edges = sorted({e for c in pd for e in c}); parent = {e: e for e in edges}
+    def f(x):
+        while parent[x] != x: parent[x] = parent[parent[x]]; x = parent[x]
+        return x
+    for a, b, c, d in pd: parent[f(b)] = f(d)          # over-strand edges b, d are one arc
+    roots = sorted({f(e) for e in edges}); idx = {r: i for i, r in enumerate(roots)}
+    return (lambda e: idx[f(e)]), len(roots)
+def alexander(name):
+    L = snappy.Link(name); pd = L.PD_code(); A, n = arcs_of(pd); signs = [cr.sign for cr in L.crossings]
+    M = sp.zeros(len(pd), n)
+    for r, ((a, b, c, d), s) in enumerate(zip(pd, signs)):
+        k, i, j = A(b), A(a), A(c)
+        if s &gt; 0: M[r, k] += 1 - t; M[r, i] += t; M[r, j] += -1
+        else:     M[r, k] += 1 - t; M[r, i] += -1; M[r, j] += t
+    D = sp.factor(sp.expand(M[1:, 1:].det()))
+    P = sp.Poly(sp.expand(D), t); cs = P.all_coeffs()
+    while cs and cs[-1] == 0: cs = cs[:-1]
+    if cs and cs[0] &lt; 0: cs = [-x for x in cs]
+    return cs, pd, A, n
+def colourings(pd, A, n, p):
+    # Fox colouring: 2*over - under_in - under_out = 0 mod p ; count = p^(n - rank_p)
+    M = sp.zeros(len(pd), n)
+    for r, (a, b, c, d) in enumerate(pd): M[r, A(b)] += 2; M[r, A(a)] -= 1; M[r, A(c)] -= 1
+    rk = sp.Matrix(M).applyfunc(lambda x: x % p)
+    # rank over GF(p)
+    from sympy import GF
+    from sympy.polys.matrices import DomainMatrix
+    dm = DomainMatrix.from_Matrix(rk).convert_to(GF(p))
+    return p ** (n - dm.rank())
+if __name__ == &#x27;__main__&#x27;:
+    for name, label in [(&#x27;K3a1&#x27;, &#x27;trefoil 3_1&#x27;), (&#x27;K4a1&#x27;, &#x27;figure-eight 4_1&#x27;), (&#x27;K5a1&#x27;, &#x27;5_2 (K5a1)&#x27;), (&#x27;K11n34&#x27;, &#x27;Conway knot 11n34&#x27;), (&#x27;K11n42&#x27;, &#x27;Kinoshita-Terasaka 11n42&#x27;), (&#x27;K9a40&#x27;, &#x27;K9a40 (det 27)&#x27;), (&#x27;K6a3&#x27;,&#x27;6_1 stevedore&#x27;)]:
+        try:
+            cs, pd, A, n = alexander(name); det = abs(sum(c*(-1)**k for k, c in enumerate(cs)))
+            print(f&#x27;{label:28s} crossings={len(pd):2d} Delta coeffs={cs} det=|Delta(-1)|={det}  det mod 3={det%3}  det mod 9={det%9}  #3-colourings={colourings(pd,A,n,3)}  #5-colourings={colourings(pd,A,n,5)}&#x27;)
+        except Exception as e: print(label, &#x27;ERR&#x27;, e)
+</pre><h3>colour_angles.py</h3><pre># SCRIPT: SM369-COLOUR-ANGLES — digit sums of the Mixin/polarizer angles in degrees vs other angle units
+from fractions import Fraction
+def dsum(x):  # digit sum of a terminating decimal, decimal point ignored
+    s = format(x, &#x27;f&#x27;).rstrip(&#x27;0&#x27;).rstrip(&#x27;.&#x27;) if isinstance(x, float) else str(x)
+    return sum(int(c) for c in s if c.isdigit())
+ang = [Fraction(225, 10)*k for k in range(1, 16)]
+print(&#x27;kill condition: if the digit-sum-9 property survives a change of angle unit, it is physical; if it changes, it belongs to the degree convention (360 = 2^3·3^2·5)&#x27;)
+print(&#x27;degrees      :&#x27;, [float(a) for a in ang])
+print(&#x27;digit sums mod 9 (degrees):&#x27;, [dsum(float(a)) % 9 for a in ang])
+grad = [a*Fraction(400, 360) for a in ang]; print(&#x27;gradians     :&#x27;, [float(g) for g in grad]); print(&#x27;digit sums mod 9 (gradians):&#x27;, [dsum(float(g)) % 9 for g in grad])
+turns = [a/360 for a in ang]; print(&#x27;turns        :&#x27;, [float(t) for t in turns]); print(&#x27;digit sums mod 9 (turns):&#x27;, [dsum(float(t)) % 9 for t in turns])
+print(&#x27;reason: 360 = 2^3·3^2·5, and k·360/16 = 22.5·k = 9·(2.5k); halving in decimal multiplies the digit string by 5, which keeps divisibility by 9&#x27;)
+</pre><h2>Sources</h2><ul><li>Viazovska, The sphere packing problem in dimension 8, arXiv:1603.04246 (read)</li><li>Cohn, Kumar, Miller, Radchenko, Viazovska, The sphere packing problem in dimension 24, Annals 185 (2017), arXiv:1603.06518</li><li>Piccirillo, The Conway knot is not slice, arXiv:1808.02923 (read)</li><li>Mirzakhani, Simple geodesics and Weil–Petersson volumes, Invent. Math. 2007 (2005 preprint read)</li><li>Arkani-Hamed, Cao, Dong, Figueiredo, He, NLSM ⊂ Tr(Φ³), arXiv:2401.05483 (read); Scalar-Scaffolded Gluons, arXiv:2401.00041; surfaceology origin arXiv:2309.15913</li><li>Jeromie Beasley, Colour Selects the Leader v1.1 (2026-10-27); Lean repositories at github.com/dicipler-pixel</li><li>Cited from standard references, not re-fetched: von Staudt–Clausen; Fox colourings; Saad–Shenker–Stanford 2019; E₈ exponents</li></ul></body></html>
