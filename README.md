@@ -46,7 +46,7 @@ The file is [`ThreeBody/Basic.lean`](ThreeBody/Basic.lean). What is not proved i
 
 Every push runs [the proof check](.github/workflows/build.yml): build against Lean v4.34.1 and
 Mathlib v4.34.1, independent replay in Lean's kernel checker, an axiom audit (only `propext`,
-`Classical.choice`, `Quot.sound`), and three deliberately false statements that must fail.
+`Classical.choice`, `Quot.sound`), and four deliberately false statements that must fail.
 
 ## The paper
 
