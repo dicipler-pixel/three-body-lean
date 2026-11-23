@@ -1,0 +1,7 @@
+trefoil 3_1                  crossings= 3 Delta coeffs=[1, -1, 1] det=|Delta(-1)|=3  det mod 3=0  det mod 9=3  #3-colourings=9  #5-colourings=5
+figure-eight 4_1             crossings= 4 Delta coeffs=[1, -3, 1] det=|Delta(-1)|=5  det mod 3=2  det mod 9=5  #3-colourings=3  #5-colourings=25
+5_2 (K5a1)                   crossings= 5 Delta coeffs=[2, -3, 2] det=|Delta(-1)|=7  det mod 3=1  det mod 9=7  #3-colourings=3  #5-colourings=5
+Conway knot 11n34            crossings=11 Delta coeffs=[1] det=|Delta(-1)|=1  det mod 3=1  det mod 9=1  #3-colourings=3  #5-colourings=5
+Kinoshita-Terasaka 11n42     crossings=11 Delta coeffs=[1] det=|Delta(-1)|=1  det mod 3=1  det mod 9=1  #3-colourings=3  #5-colourings=5
+K9a40 (det 27)               crossings= 9 Delta coeffs=[7, -13, 7] det=|Delta(-1)|=27  det mod 3=0  det mod 9=0  #3-colourings=27  #5-colourings=5
+6_1 stevedore                crossings= 6 Delta coeffs=[2, -5, 2] det=|Delta(-1)|=9  det mod 3=0  det mod 9=0  #3-colourings=9  #5-colourings=5
