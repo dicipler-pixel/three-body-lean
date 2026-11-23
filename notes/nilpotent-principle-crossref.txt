@@ -1,0 +1,45 @@
+THE NILPOTENT PRINCIPLE AND THIS REPOSITORY - WHERE IT CAN AND CANNOT ENTER
+===========================================================================
+Context: a report from another line of work (Non-normality v15 / the peel paper) argues that
+several "walls" are one phenomenon: a nonzero nilpotent sitting at a collision of eigenvalues --
+the spinning key, critical damping, Koide's relation, the Ramanujan bound (companion matrix on the
+bound), the ISCO generator [[0,1],[-k^2,0]] at k = 0, and the peel's W+1. The unfoldings differ,
+the principle does not. This file records what that principle can and cannot mean here.
+
+1. THE GRAM OPERATOR M CANNOT BE AN INSTANCE. M is real symmetric (gram_eq). A real symmetric
+   matrix is diagonalisable over R, so it has no nonzero nilpotent part: if M^2 = 0 then M = 0,
+   because ||M v||^2 = <v, M^2 v> = 0 for every v. Hence:
+     - syzygy (Prop. 3) is a rank drop of a positive-semidefinite operator: lambda_min = 0,
+       gap maximal, not a Jordan block;
+     - the equilateral point (Prop. 4, Thm 5) is a point where M is a multiple of the identity
+       and the gap closes quadratically: again not a Jordan block.
+   In a symmetric family an eigenvalue collision is ALWAYS diagonalisable -- repeated eigenvalue,
+   never defectiveness. The order of the closing is therefore decided by the family's structure
+   (the fold: Phi linear, M even at the pole), not by a nilpotent. That is exactly why the
+   three-body wall is quadratic where the peel and ISCO walls are square-root.
+
+2. THE TRANSPORT OPERATOR A IS THE PLACE IT COULD ENTER, AND ONLY WHERE t/g CHANGES SIGN.
+   Theorem 9 gives A^T B = B A with B = diag(t/g). Multiplying by B on the left:
+     (B A)^T = A^T B^T = A^T B = B A,
+   so BA is symmetric -- a two-line corollary of reciprocity. If in addition B is positive
+   definite (t/g > 0 pointwise), then A is similar to a symmetric matrix,
+     B^{1/2} A B^{-1/2} = B^{-1/2} (B A) B^{-1/2},  symmetric,
+   so A is diagonalisable with real spectrum and again has no nilpotent. Defectiveness can only
+   appear where B is indefinite or degenerate, i.e. where t/g changes sign or vanishes -- and the
+   paper already identifies ||B|| = max t/g as diverging exactly on the collision divisor.
+   So the testable claim, if the nilpotent principle is to be imported: any nilpotent wall in the
+   transport picture sits at t/g = 0, not at the Gram degeneracies. That is a prediction of this
+   repository, not an analogy.
+
+3. WHAT IS NOT CLAIMED HERE. Nothing in this file has been checked against the v15 repository or
+   bh_isco_10.py; the ISCO constants (sqrt2/18), the peel discriminant (128 delta) and the
+   kappa sqrt(delta) -> sqrt2 limit are that report's numbers and are not reproduced here. The
+   statement that the peel's W+1 is a complex traceless nilpotent is likewise theirs to make; it
+   is a two-line check (trace 0, square 0, nonzero) once W is in hand.
+
+4. IF THE CONNECTION IS WANTED IN THIS REPOSITORY, TWO CHEAP ITEMS:
+   - a Lean lemma `nilpotent_symm_eq_zero : M^T = M -> M * M = 0 -> M = 0` for 2x2, which makes
+     point 1 machine-checked rather than an argument by diagonalisability;
+   - a Lean corollary of `reciprocity` that `pairing t g * transport t g` is symmetric, which is
+     the first half of point 2. The positive-definiteness half needs square roots of the diagonal
+     of B and is not worth doing until the connection is actually wanted.

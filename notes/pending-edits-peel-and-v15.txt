@@ -1,0 +1,121 @@
+DRAFT EDITS: THE PEEL WALL AND THE v15 CLASSIFICATION
+=====================================================
+Prepared from the continuous atlas (Operator-First Atlas, continuous v4, in
+p-02ab.../paper/zenodo/23590925/operator_first_atlas_continuous_v4.html), the peel project
+(p-6a02f7..., "Light Keeps the Ledger", LoopWall/*.lean and results/light-bridge-paper.md) and
+bh_isco_10.py (inside p-02ab.../paper/zenodo/23493466/bh_v10_code_and_sources.zip).
+
+WHAT I VERIFIED EXACTLY (sympy, from the files' own definitions)
+---------------------------------------------------------------
+1. THE PEEL WALL IS A NONZERO COMPLEX NILPOTENT. With Bx = [[c,s],[s,c]], By = [[c,-is],[is,c]],
+   Bxi = [[c,-s],[-s,c]], Byi = [[c,is],[-is,c]], W = Bx By Bxi Byi, and at the wall
+   c = cosh(r/2) = sqrt2, s = sinh(r/2) = 1:
+     W+1 = [[4i, 2*sqrt2*(-1+i)*i], [2*sqrt2*(-1+i), -4i]]
+     trace(W+1) = 0, det(W+1) = 0, (W+1)^2 = 0, W+1 != 0, spectrum {0}, entries genuinely complex.
+   This agrees with the project's own Lean theorems wall_sq, wall_isNilpotent,
+   wall_add_one_ne_zero, wall_notDiagonalizable (both LoopWall/ExceptionalPoint.lean and
+   LoopWall/ExceptionalPointDefective.lean). Nothing to correct; the transcript's claim is right
+   and already machine-checked.
+
+2. B13 = THE FAMILY H(z) = [[0,1],[z,0]], lambda = +/- sqrt(z). The atlas card B13 says exactly
+   that, with the discriminant winding once per loop. bh_isco_10.py's generator is that family at
+   z = -k^2: A = [[0,1],[-k^2,0]], A^2 = -k^2 I. With V = (1-2/r)(1+L^2/r^2) and L^2 = r^2/(r-3) on
+   the circular family, k^2 = V''/2 = (r-6)/(r^3 (r-3)); at r = 6, A = [[0,1],[0,0]], A^2 = 0,
+   A != 0. Verified symbolically.
+3. THE ISCO CONSTANT IS sqrt2/18 AND IT IS RIGHT. V'''(6) at L^2 = 12 is 1/324; the along-family
+   slope of V''/2 at r = 6 is exactly 1/648 (and dL^2/dr = 0 there, so the extra term vanishes);
+   hence gap/sqrt(d) -> 2 sqrt(1/648) = sqrt2/18 = sqrt(2 V'''(6)). Exact.
+   NOW verified. kappa is the eigenvector condition number of W, named in the Lean comment at
+   LoopWall/ExceptionalPoint.lean:16,355 ("kappa^2 delta = 2 + 2 delta + O(delta^2), hence
+   kappa sqrt(delta) -> sqrt2", explicitly "not required for the proof"). Computed here from W(r)
+   with delta = tanh^2(r/2) - 1/2: kappa^2 delta = 2.01995 at delta = 1e-2, 2.0019995 at 1e-3,
+   2.00002 at 1e-5, and 1.999998 at -1e-6; kappa sqrt|delta| -> 1.414214 = sqrt2 on both signs
+   over six decades. The comment's law is right, including its 2 delta correction.
+
+NUMBERING: WHAT THE TRANSCRIPT GOT WRONG
+----------------------------------------
+The atlas already holds the classification, under three separate cards:
+  B199  "One wall where the trace form vanishes: the spinning key, critical damping, the ISCO."
+        -- this is the general principle, and it is stated in trace-form language, not as a list.
+  B177  "The ISCO is a spectral wall: a Jordan block where gravity reaches the inverse cube."
+        -- this is the ISCO's own card, and the place its constant belongs.
+  B13   "H(z) = [[0,1],[z,0]], lambda = +/- sqrt z, exceptional point at z = 0, the discriminant
+        winds exactly once per loop" -- this is the family card, not the ISCO card.
+So "B13 ISCO-type generator" conflates B13, B177 and B199. The cross-reference v15 needs is to
+B177 for the constant and B199 for the classification; B13 is the shared family.
+
+EDIT 1 - THE PEEL PAPER, section 2, item (C')  (results/light-bridge-paper.md, lines 90-96)
+--------------------------------------------------------------------------------------------
+The existing text already cites v15 and already says "the peel wall is the complex member". The
+one substantive defect: it quotes the principle as being about "every REAL traceless 2x2 matrix",
+which the peel violates. Cayley-Hamilton gives T^2 = q(T) I with q(T) = (1/2) tr T^2 = -det T for a
+traceless 2x2 matrix over any field of characteristic not 2, so the principle is field-independent
+and the peel is an instance, not an analogue. Proposed replacement for the first sentence group:
+
+  **(C') The wall is an exceptional point.** This is an instance of a principle stated in
+  *Non-normality is Connection Energy* v15 §2 and carried as atlas **B199** ("one wall where the
+  trace form vanishes"): every traceless 2x2 matrix T -- over R or over C, since Cayley-Hamilton
+  gives T^2 = q(T)I with q(T) = 1/2 tr T^2 = -det T in either case -- has its Hermitian and skew
+  halves deciding the sign of q, and when q = 0 with T != 0 the operator is a nonzero nilpotent, a
+  single Jordan block, **and that is the wall**. The instances listed there are the spinning key,
+  critical damping, the epicyclic generator of a circular orbit, Koide's relation and the Ramanujan
+  bound; the circular-orbit generator is atlas **B177** and carries the computed constant
+  sqrt(2 V'''(6)) = sqrt2/18, and **the peel wall is the complex member of the family**. That it is
+  complex rather than real is the only thing that distinguishes it.
+
+and then, after the existing display (tr W)^2 - 4 ~ 128 delta, insert one sentence of evidence:
+
+  Independently of the Lean, at the wall (cosh(r/2) = sqrt2, sinh(r/2) = 1) the matrix
+  W+1 = [[4i, 2 sqrt2 (-1+i) i], [2 sqrt2 (-1+i), -4i]] has tr(W+1) = det(W+1) = 0, so
+  (W+1)^2 = 0 by Cayley-Hamilton, while W+1 != 0 -- the same three facts as `wall_sq`,
+  `wall_isNilpotent` and `wall_add_one_ne_zero`, reached without them.
+
+EDIT 2 - v15 SECTION 2 (the classification) AND ITS CROSS-REFERENCES
+--------------------------------------------------------------------
+Add to the instance list, after "the Ramanujan bound":
+
+  the peel wall of the two-step loop W = Bx By Bx^{-1} By^{-1}: at r = log(3 + 2 sqrt2) the
+  traceless matrix T = W+1 has tr T = det T = 0 and T != 0, so T is a nonzero nilpotent -- the
+  complex member of the family, where the q = 0 wall is a complex point rather than a real one.
+  Its discriminant obeys (tr W)^2 - 4 ~ 128 delta; the real member, the circular-orbit generator
+  A = [[0,1],[-V''/2,0]], unfolds as gap/sqrt(d) -> sqrt(2 V'''(6)) = sqrt2/18 (atlas B177). The
+  constants differ because the unfoldings differ, not because the objects do.
+
+and, at B13 in v15 (if v15 numbers its own cards), replace "ISCO-type generator" by:
+
+  the exceptional-point family H(z) = [[0,1],[z,0]], lambda = +/- sqrt z, of which the
+  circular-orbit generator is the member z = -k^2 with k^2 = V''/2 (bh_isco_10.py) and the peel's
+  W = Bx By Bx^{-1} By^{-1} its conjugate pair crossed at r = log(3 + 2 sqrt2).
+
+WHAT THIS DOES NOT SETTLE
+-------------------------
+- v15 is not in this workspace, so EDIT 2 is drafted against the quoted passages only; the card
+  numbers cited (B199, B177, B13) are the continuous atlas's, and v15's own numbering may differ.
+- The symmetric slice is why the three-body case is not a member: on real symmetric traceless
+  2x2 matrices tr T^2 = 2(a^2 + b^2) >= 0, zero only at T = 0, so the null cone of the trace form
+  meets that slice only at the origin. A symmetric family can collide without ever becoming
+  defective, which is why its wall closes quadratically (this repository) and not as a square
+  root (the peel, the ISCO). That sentence, if wanted, belongs in v15's scope note and is proved
+  in one line.
+
+
+APPLIED (2026-11-23)
+--------------------
+EDIT 1 applied to the peel repository, file results/light-bridge-paper.md: the (C') paragraph now
+  cites atlas B199 and B177, states the principle for traceless matrices over R or C, and a new
+  paragraph after the wall display records the exact W+1 computation and the kappa law with the
+  numbers above. That repository already had uncommitted changes of its own (paper PDF,
+  results/key-correlations.md, results/light-bridge-inventory.md); only light-bridge-paper.md was
+  touched, and the focused diff is in the session record.
+EDIT 2 applied to a COPY of v15's text at p-1a2a.../repo/.scratch/NN_v15_edited.txt, not to the
+  original: harness/reading/NN_v15.txt is sealed by harness/SEAL.json (a hash manifest), and it is
+  a pdftotext extraction, not the typesetting source. The edits: the principle is stated for a
+  traceless pair over R or C, the peel is added as the complex member in the prose instance list,
+  the "five places below ... sixth in Section 8" sentence gains a seventh (complex) instance, and
+  a B13b row joins v15's check table with result "exact".
+
+ON THE NUMBERING, one correction to the transcript: v15's B13 is a ROW IN ITS CHECK TABLE
+  ("ISCO-type generator [[0,1],[-k^2,0]]: A^2=-k^2 I; at k=0 nonzero nilpotent", NN_v15.txt:3232).
+  The continuous atlas uses B13 for the family card H(z) = [[0,1],[z,0]], lambda = +/- sqrt z, and
+  gives the ISCO its own card B177 and the classification B199. The peel's (C') therefore cites
+  B199 and B177; v15's table keeps its own B13 and gains B13b.
