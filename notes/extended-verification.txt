@@ -1,0 +1,62 @@
+EXTENDED VERIFICATION, ROUND TWO
+================================
+Everything below was run in this VM on 2026-11-23. Each item says what was checked, against what,
+and what the check can and cannot establish. Following the statement-audit discipline: statement
+fidelity and proof status are reported separately, and a check I ran myself is not called
+independent of me -- it is independent of the author's scripts.
+
+1. THIS REPOSITORY: AXIOM AUDIT OF EVERY THEOREM
+   Method: the 46 `theorem` declarations discovered by verify.py's own counting rule were each
+   submitted to `#print axioms` against a locally built ThreeBody.Basic (lean -o, system Mathlib).
+   Result: 46 reports, all "depends on axioms: [propext, Classical.choice, Quot.sound]"; nothing
+   outside those three. Union over the fleet = the standard three. No sorryAx, no project axiom.
+   This reproduces locally what scripts/verify.py does in CI, without needing lake.
+
+2. THIS REPOSITORY: THE FOUR FALSE CONTROLS
+   Method: each FalseControls/*.lean compiled against the built module.
+   Result: all four FAIL, each with "unsolved goals" -- a mathematical failure, not an
+   infrastructure one (verify.py rejects the latter). So the CI's claim "four deliberately false
+   statements that must fail" holds on this replay, including the new unit_norm_needed control.
+
+3. THE PEEL PROJECT: ITS LEAN CLAIMS, IN THIS KERNEL
+   Method: `lean LoopWall/ExceptionalPoint.lean` and `LoopWall/ExceptionalPointDefective.lean`
+   compiled here with the system toolchain; `#print axioms` on the three wall theorems.
+   Result: both files compile, exit 0. wall_sq, wall_isNilpotent and wall_add_one_ne_zero each
+   depend on [propext, Classical.choice, Quot.sound] only. So the peel's nilpotency claim is
+   kernel-checked here, not just read.
+   Name audit of the edited (C'): trace_W, det_W, wall_defective_wallR, wall_parabolic_wallR,
+   charpoly_W_wall, wall_not_diagonalizable, wall_sq, wall_isNilpotent, wall_add_one_ne_zero all
+   exist. wall_sq is not only in ExceptionalPointDefective.lean: the same name is declared in
+   LoopWall/BridgeUnderdetermination.lean, which is worth knowing if the paper ever cites it by
+   file.
+
+4. THE 3-6-9 BATTERY: RECOMPUTED FROM THE DEFINITIONS
+   Method: my own code (numpy/sympy/integer arithmetic), not the report's scripts. Compared with
+   the outputs printed in report.pdf Appendix A.
+   T3  (l mod 9 in {0,3,6}) <=> 3 | l on [-10000, 10000], and digit-sum = n mod 9 for n < 100000:
+       both True. MATCH.
+   T4  Solfeggio in Hz mod 9 = [6, 0, 3, 6, 0]; in half-Hz = [3, 0, 6, 3, 0]; step 111 = 3*37.
+       MATCH.
+   T5  A2 residues mod 9 for n <= 60 = {0,3,6}, first seven 6,0,6,6,0,0,12; Z^2 mod 3 = {0,1,2};
+       Z^8 mod 3 = {0,1,2}, first four 16,112,448,1136; E8 = 240 sigma_3 mod 9 = {0,3,6} for
+       n <= 40. MATCH. (The OEIS check of the same numbers is in
+       notes/knot-and-lattice-verification.txt.)
+   T6  Apollonian (-1,2,2,3), curvatures <= 20000: 6620 distinct; residues mod 3 = {0,2},
+       mod 9 = {0,2,3,5,6,8}, mod 24 = {2,3,6,11,14,15,18,23}. MATCH, all three.
+   T7  Catalan C_n, n < 3000: divisible by 2, 3, 5, 9 with frequencies 0.996, 0.895, 0.892, 0.727;
+       C_n mod 9 for n = 1..20 = [1,2,5,5,6,6,6,8,2,2,7,4,4,0,0,0,6,6,6,3]. MATCH.
+   T8  cyclic relabelling of 200 random configurations: rotation angle about the polar axis is
+       240.0 degrees every time; max |change in signed area| 4.4e-16; the equilateral triangle maps
+       to (0, 0, -1). MATCH in substance: the height change is 4.4e-16 here against 3.3e-16 in the
+       report because the random configurations are regenerated -- both are machine zero.
+
+5. NOT CHECKED, AND WHY
+   T1 and T2 (OAM leakage under broken symmetry; vortex winding under random perturbations) depend
+   on the report's own simulation and its RNG seed. Re-running the author's script would reproduce
+   its output by construction and would not be a check; anything else would not reproduce those
+   particular numbers. They are left as reported.
+   The 5-colouring column of the knot table is unchecked: no SnapPy in this environment, and
+   KnotInfo stores no colouring column.
+   Nothing here establishes that the paper's prose says what its tables show; that is the separate
+   statement-fidelity question, and for this repository it is audited in
+   notes/remark7-reaudit.txt.
