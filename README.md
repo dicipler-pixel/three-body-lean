@@ -61,4 +61,4 @@ Copyright (c) 2026 Jeromie Beasley. Code and proofs: [MIT](LICENSE). Written tex
 
 ## Also in this repository
 
-[`369-three-fold-protection/`](369-three-fold-protection/): the 3-6-9 straw man (Jeromie Beasley, Grok, Claude), with the three-fold protection rule, its computations and 14 core-Lean theorems checked by their own workflow.
+[`369-three-fold-protection/`](369-three-fold-protection/): Jeromie Beasley’s 3-6-9 straw man, with the three-fold protection rule, its computations and 14 core-Lean theorems checked by their own workflow.

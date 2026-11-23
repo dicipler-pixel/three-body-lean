@@ -1,5 +1,5 @@
 /- SM369.lean — straw-man checks for the 3-6-9 rule, core Lean 4 (no Mathlib), kernel-checked.
-   Authors: Jeromie Beasley · Grok (xAI) · Claude (Anthropic)
+   Author: Jeromie Beasley
    Synthesis: Jeromie Beasley with Grok.
    Audit, rebuild and Lean: Jeromie Beasley with Claude. Created with AI assistance. -/
 

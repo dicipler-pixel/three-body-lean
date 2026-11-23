@@ -1,10 +1,9 @@
 # 3-6-9: the three-fold protection rule
 
-**Jeromie Beasley** · **Grok** (xAI) · **Claude** (Anthropic)
+**Jeromie Beasley**
 
 Jeromie Beasley worked through the synthesis
 conversation with Grok, and the straw-man audit, the rebuild and the Lean with Claude.
-Created with AI assistance; the authors directed the work.
 
 **Read the report: [report.pdf](report.pdf)**
 
