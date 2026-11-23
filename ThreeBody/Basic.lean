@@ -21,10 +21,11 @@ read in the orthonormal frame `{e_ϑ, e_φ}`.
   (`evec_flip`); with the norm fixed the flip is forced (`evec_monodromy`). So the quadratic closing
   is a property of `gram`, not of the symmetry.
 * Proposition 8: near syzygy `λ_min = sin² ε` (the fold), with `λ_min/ε² → 1`.
-* Theorem 9: `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` for `B = diag(t/g)`, and for every right
-  eigenvector `R`, `ℓ = B R` satisfies `Aᵀ ℓ = μ ℓ` (that `ℓ ≠ 0` is not stated).
-* Theorem 10 (the exact part): the shifted ledger `log(1+λ_min) + log 2` is at least `log 2`,
-  with equality exactly at `λ_min = 0`.
+* Theorem 9: with `g ≠ 0` pointwise, `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` for `B = diag(t/g)`,
+  and for every right eigenvector `R`, `ℓ = B R` satisfies `Aᵀ ℓ = μ ℓ` (that `ℓ ≠ 0` is not
+  stated).
+* Theorem 10 (the exact part): for `λ_min ≥ 0`, the shifted ledger `log(1+λ_min) + log 2` is at
+  least `log 2`, with equality exactly at `λ_min = 0`.
 * Proposition 17 (the key step): at a collinear configuration every transverse motion leaves every
   squared distance stationary.
 -/
@@ -151,7 +152,7 @@ noncomputable def rot : Matrix (Fin 2) (Fin 2) ℝ := !![-1 / 2, -(√3 / 2); �
 
 /-- **Remark 7.** A symmetric 2-tensor commuting with the `ℤ₃` rotation is a multiple of the
 identity. Pointwise only: this constrains the tensor *at* the fixed point and says nothing about
-the first-order term of a family. The quadratic closing (`gap_eq`) is therefore a fact about this
+the first-order term of a family. The quadratic closing (`gap_quadratic`, from `gap_eq`) is therefore a fact about this
 particular `M`, not a consequence of the `ℤ₃` symmetry. -/
 theorem z3_isotropic (a b d : ℝ) (h : rot * !![a, b; b, d] = !![a, b; b, d] * rot) :
     b = 0 ∧ a = d := by

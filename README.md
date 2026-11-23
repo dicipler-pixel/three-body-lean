@@ -35,8 +35,8 @@ invertible. Lean states the pole limits at `ϑ = 0`.
 | Theorem 5 | The gap closes quadratically at `ϑ = 0`: `gap/ϑ² → 1` | `sin_div_self_tendsto`, `gap_quadratic` |
 | Remark 7 | At the equilateral point an invariant symmetric 2-tensor is a multiple of the identity — pointwise only, so it does not forbid a linear term in a family | `z3_isotropic`, `invariant_isotropic`, `commute_iff_invariant`, `gram_even` |
 | Prop. 8 | The fold: `λ_min(π/2 + ε) = sin² ε` and `λ_min/ε² → 1` | `fold_lambda`, `fold_quadratic` |
-| Theorem 9 | `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` with `B = diag(t/g)`; for every right eigenvector `R`, `Aᵀ(BR) = μ BR` (that `BR ≠ 0` is not stated) | `reciprocity`, `left_eigenvector` |
-| Theorem 10 | The shifted ledger `log(1 + λ_min) + log 2` is `≥ log 2`, with equality exactly at `λ_min = 0` | `ledger_min` |
+| Theorem 9 | With `g ≠ 0` pointwise, `A = D_t − g tᵀ` satisfies `Aᵀ B = B A` with `B = diag(t/g)`; for every right eigenvector `R`, `Aᵀ(BR) = μ BR` (that `BR ≠ 0` is not stated) | `reciprocity`, `left_eigenvector` |
+| Theorem 10 | For `λ_min ≥ 0`, the shifted ledger `log(1 + λ_min) + log 2` is `≥ log 2`, with equality exactly at `λ_min = 0` | `ledger_min` |
 | Prop. 17 | At a collinear configuration every transverse motion leaves every squared distance stationary | `transverse_stationary` |
 
 The file is [`ThreeBody/Basic.lean`](ThreeBody/Basic.lean). What is not proved is in
