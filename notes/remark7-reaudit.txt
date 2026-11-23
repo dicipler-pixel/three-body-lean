@@ -1,0 +1,202 @@
+RE-AUDIT OF THE THREE EDITS AGAINST Gap.lean
+============================================
+Date of this re-audit: after the edits. Machine: this VM, Lean 4.35.0 + the Mathlib built at
+/opt. Evidence: .scratch/audit/Gap.lean compiles with exit 0, 0 errors; the axiom report from
+`#print axioms` gives only [propext, Classical.choice, Quot.sound] for every lemma named below.
+
+The point of this file: for each sentence of the new text, say which Lean declaration carries it
+and which sentences remain prose. A sentence that nothing carries is marked NOT FORMALISED and
+should not be presented in the paper as if it were proved in Lean.
+
+-------------------------------------------------------------------------------
+A. README TABLE ROW (edited)
+   "At the equilateral point an invariant symmetric 2-tensor is a multiple of the identity --
+    pointwise only, so it does not forbid a linear term in a family"
+-------------------------------------------------------------------------------
+"invariant ... is a multiple of the identity"
+   carried by: z3_isotropic (ThreeBody/Basic.lean, unchanged)
+             + invariant_iff_commute (Gap.lean: Rᵀ M R = M <-> M R = R M, using R_orth)
+   VERDICT: MATCH. Caveat, unchanged and still disclosed in LIMITATIONS.md: the identification
+   of the tangent plane at the pole with this 2x2 picture is prose; Lean has no shape space.
+
+"pointwise only, so it does not forbid a linear term in a family"
+   carried by: linear_term_not_forbidden (Gap.lean: a symmetric, linear, nonzero L with
+   L (R p) = R L p Rᵀ), plus Q_equivariant and Q_linear_jet_nonzero for the concrete family.
+   VERDICT: MATCH. This is exactly what the old wording denied and the new wording states.
+
+-------------------------------------------------------------------------------
+B. LEAN DOCSTRING (edited)
+   "A symmetric 2-tensor commuting with the Z3 rotation is a multiple of the identity. Pointwise
+    only: this constrains the tensor at the fixed point and says nothing about the first-order
+    term of a family. The quadratic closing (gap_eq) is therefore a fact about this particular
+    M, not a consequence of the Z3 symmetry."
+-------------------------------------------------------------------------------
+sentence 1  carried by z3_isotropic itself. MATCH.
+sentence 2  carried by linear_term_not_forbidden (existence of the equivariant linear term).
+            MATCH.
+sentence 3  carried by, in order: gap_eq/gram_eq (repo, the closing is computed from M),
+            and Q_gap_sq (Gap.lean: another symmetric equivariant family whose gap-squared is
+            r^2, i.e. whose gap is r, linear). So "not a consequence of the symmetry" has a
+            witness. MATCH.
+
+-------------------------------------------------------------------------------
+C. REMARK 7 REPLACEMENT TEXT (notes/remark7-replacement.txt)
+-------------------------------------------------------------------------------
+1. "the stabiliser acts through an element of order three, whose characteristic polynomial has
+    discriminant -3 and so no real root"
+      carried by: R_cube (R^3 = 1), R_trace, R_det, R_disc (tr^2 - 4 det = -3 < 0).
+      VERDICT: MATCH.
+2. "the real 2-plane is therefore irreducible, and every invariant symmetric 2-tensor at the
+    pole is a multiple of the identity"
+      carried by: z3_isotropic + invariant_iff_commute. The step "no real root => no invariant
+      line => irreducible" is one line of prose over R_disc.
+      VERDICT: MATCH (the irreducibility inference itself is prose; its input is formal).
+3. "Q(x,y) = (1/2)[[2+x, -y],[-y, 2-x]] is positive definite near the origin"
+      carried by, in part: Q_trace (= 2), Q_det (= 1 - (x^2+y^2)/4), Q_det_pos (det > 0 for
+      x^2+y^2 < 4), Q_symm.
+      NOT FORMALISED: positive definiteness itself. It follows from trace 2 and det > 0 by the
+      standard 2x2 criterion, which is not in Mathlib in that form and is not proved here; the
+      eigenvalue computation (1 +- r/2) is exact in sympy (verify_m4.py) and reproducible.
+      FLAG for the paper: state it with the eigenvalues, which is the honest form.
+4. "invariant under the full D3 stabiliser of the pole"
+      carried by: Q_equivariant (120-degree rotation) and Q_reflection (the reflection
+      diag(1,-1)). The two generate D3, and Q is invariant under both, hence under all six
+      elements. VERDICT: MATCH.
+5. "its eigenvalues are 1 +- sqrt(x^2+y^2)/2, so the gap is sqrt(x^2+y^2) rather than its
+    square"
+      carried by, in the trace/det form: Q_trace, Q_det, Q_gap_sq (tr^2 - 4 det = x^2 + y^2,
+      so the gap squared is x^2 + y^2). The passage from trace/det to eigenvalues is prose over
+      a quadratic with positive discriminant.
+      VERDICT: MATCH for the trace/det content; the eigenvalue reading is standard prose.
+6. "the eigenline returns negated after one circuit"
+      NOT FORMALISED. No transport, no loop, no sign in Lean. Verified exactly in sympy by two
+      members and by me (v(phi+2pi) = -v(phi)). FLAG: this is a computation, not a theorem.
+7. "Phi is the restriction of one linear map, so the tangent planes at w and -w coincide and
+    the differentials agree; hence M(-w) = M(w)"
+      carried by, in the coordinate form: gram_even (cos(pi - vartheta)^2 = cos vartheta^2)
+      together with the repo's gram_eq (M = diag(cos^2, 1)). In full, the statement is
+      "gram vartheta phi = gram (pi - vartheta) (phi + pi)".
+      NOT FORMALISED as a statement about M; the evenness of the cos^2 entry is formal, the
+      identification T_{-w} = T_w is prose (one line, and true).
+      FLAG: cheap to formalise if wanted -- it is a two-line corollary of gram_eq.
+8. "every odd term vanishes, and the surviving quadratic term is the anisotropy computed in
+    Theorem 5, sin^2 vartheta"
+      NOT FORMALISED as an analytic statement (evenness => Taylor coefficients of odd order
+      vanish). The quadratic term itself is Theorem 5's computation, which is in Lean
+      (gap_eq, gap_quadratic). FLAG: the Taylor argument is prose, its conclusion is the
+      formal identity.
+9. "the soft eigenline is e_vartheta, which is smooth and single-valued along latitude circles"
+      NOT FORMALISED. This is the paper's own Theorem 5 verification (numerical holonomy +1)
+      and the coordinate statement e_vartheta = (cos vartheta cos phi, cos vartheta sin phi,
+      -sin vartheta). FLAG: computation/observation, not Lean.
+10. "The order of the degeneracy is thus a property of the distance map, not of the relabelling
+     group."
+      Synthesis of 3-8: the group is present in both Q and M, Q has a linear gap, M has a
+      quadratic one, so the group does not determine the order. Backed by 3 (Q) + 8 (M).
+      VERDICT: supported, with the two flags above carried along.
+
+-------------------------------------------------------------------------------
+SUMMARY
+-------------------------------------------------------------------------------
+README row: MATCH (both halves carried by Lean).
+Docstring:  MATCH (all three sentences carried by Lean).
+Remark 7 text: 6 of its assertions are carried by Lean declarations (items 1, 2, 4, 5, 10 and
+the pointwise part), 4 remain prose/computation and are flagged (items 3, 6, 7, 8, 9 -- PD,
+monodromy, evenness of M, the Taylor argument, the soft eigenline).
+The remaining prose is either one-line (7, 8) or explicitly computational (3, 6, 9); none of it
+contradicts anything in Lean, and none of it is presented as a Lean theorem.
+
+-------------------------------------------------------------------------------
+ADDENDUM: THE BRIDGE AND THE EVENNESS ARE NOW IN THE REPOSITORY
+-------------------------------------------------------------------------------
+Moved from the referee file into ThreeBody/Basic.lean, in the repository's own style:
+  rot_orthogonal          rotᵀ * rot = 1
+  rot_orthogonal_right    rot * rotᵀ = 1
+  commute_iff_invariant   rot * M = M * rot  <->  rotᵀ * M * rot = M   (M arbitrary)
+  z3_isotropic_multiple   the conclusion as  ∃ c, M = c • 1
+  invariant_isotropic     the paper's literal hypothesis (rotᵀ M rot = M) gives ∃ c, M = c • 1
+  gram_even               gram ϑ φ = gram (π - ϑ) (φ + π)
+
+Effect on the verdicts above:
+  - Section A, "invariant ... is a multiple of the identity": the bridge is no longer a
+    referee-side step; `invariant_isotropic` takes the paper's own hypothesis. MATCH, stronger.
+  - Section C item 7 (evenness of M): the flag is CLEARED as a statement about M. `gram_even` is
+    in the repo, and combined with `gram_eq` it says the operator is the same at w and -w.
+    What remains prose is only the inference "even => no odd Taylor coefficient".
+  - Section B sentence 1 and the bridge caveat: unchanged, now with an in-repo declaration.
+
+Still flagged, unchanged:
+  - positive definiteness of Q (det > 0 and trace 2 are formal; the 2x2 criterion is prose),
+  - the -1 eigenline monodromy (exact computation, not Lean),
+  - the Taylor/odd-term inference,
+  - the smoothness of the soft eigenline e_vartheta,
+  - the identification of the shape-space tangent action with the 2x2 matrix (LIMITATIONS.md).
+
+-------------------------------------------------------------------------------
+FLAGS CLOSED: POSITIVE DEFINITENESS AND THE -1 MONODROMY
+-------------------------------------------------------------------------------
+Both are now proved in ThreeBody/Basic.lean (not only in the referee file).
+
+Positive definiteness. Two declarations:
+  posDef_of_trace_det  a symmetric 2x2 real M with 0 < M.trace and 0 < M.det satisfies
+                       0 < v 0 * (M *ᵥ v) 0 + v 1 * (M *ᵥ v) 1 for every v ≠ 0.
+                       Division-free: a * (vᵀ M v) = (a v₀ + b v₁)² + (a d − b²) v₁²,
+                       and a > 0 follows from a d > b² ≥ 0 together with a + d > 0.
+  Q_posDef             the same for Q under the explicit hypothesis p 0 ^ 2 + p 1 ^ 2 < 4.
+So "Q is positive definite near the origin" is no longer prose. Also formal: Q_symm, Q_trace (2),
+Q_det (1 − r²/4), Q_gap_linear (trace² − 4 det = x² + y²), Q_equivariant (rot), Q_reflection (S),
+so the family is genuinely invariant under the full D3 stabiliser and its gap is genuinely linear.
+
+The -1 monodromy, exhibited by one continuous unit field evec φ = (cos φ/2, −sin φ/2):
+  Q_eigen              Q at (r cos φ, r sin φ) times evec φ = (1 + r/2) • evec φ
+  evec_unit            evec φ · evec φ = 1
+  evec_half_orthogonal evec (φ + π) ⊥ evec φ
+  Q_eigen_minus        Q at the same point times evec (φ + π) = (1 − r/2) • evec (φ + π)
+  evec_flip            evec (φ + 2π) = − evec φ
+So half a circuit swaps the two eigenlines and a full circuit returns the vector negated: that is
+the -1 monodromy, row by row.
+
+WHAT IS STILL NOT FORMALISED, and should not be claimed as if it were:
+  - the "forced" version: every continuous unit eigenvector field for the larger eigenvalue
+    flips; that needs the larger eigenspace to be one-dimensional and a connectedness argument
+    on the sign. (One swarm member is attempting it; not in the repo.)
+  - the identification of the shape-space tangent action with this 2x2 family (LIMITATIONS.md).
+  - the Taylor step "even implies no odd coefficient", which remains one line of prose over
+    gram_even.
+Everything else the revised Remark 7 asserts is now a theorem in the repository.
+
+-------------------------------------------------------------------------------
+THE FORCED VERSION, IN THE RIGHT FORM: evec_monodromy
+-------------------------------------------------------------------------------
+What was left open after the first pass is now proved, and the earlier flag was wrong as stated.
+Two facts:
+
+1. As I first asked for it, the claim is FALSE. A continuous, nowhere-zero eigenvector field for
+   the larger eigenvalue need not flip: at r = 1, w φ = (2 + sin (φ/2)) evec φ is continuous,
+   nowhere zero, an eigenvector for 1 + r/2 everywhere, and w (3π) = -evec π ≠ -3 evec π = -w π.
+   (Swarm smwt3ujh5, member m3, Lean-checked: .ultramath/smwt3ujh5/m3/Counterexample.lean.)
+   The reason is that scalar multiples of an eigenvector are eigenvectors, so nonvanishing leaves
+   the magnitude free.
+
+2. With the norm fixed the flip IS forced. ThreeBody/Basic.lean now proves
+
+     theorem evec_monodromy (r : ℝ) (hr : 0 < r) (w : ℝ → Fin 2 → ℝ) (hw : Continuous w)
+         (hunit : ∀ φ, w φ 0 * w φ 0 + w φ 1 * w φ 1 = 1)
+         (heig : ∀ φ, Q ![r * cos φ, r * sin φ] *ᵥ w φ = (1 + r / 2) • w φ) :
+         ∀ φ, w (φ + 2 * π) = -w φ
+
+   Structure of the proof, in the repo:
+   - Q_dot_comm: Q is symmetric as a bilinear form (dot product can be moved across it).
+   - Q_eigen_orth: a unit eigenvector for 1 + r/2 is orthogonal to the smaller eigenline, and this
+     needs NO trigonometry: <Q v, z> = <v, Q z> gives (1 + r/2) <v,z> = (1 - r/2) <v,z>, hence
+     <v,z> = 0 since r > 0. This replaced a half-angle computation with one line of linear algebra.
+   - Q_unit_eigen: unit eigenvector for 1 + r/2 implies v = ± evec φ. With u = cos (φ/2),
+     t = sin (φ/2), orthogonality is t v₀ + u v₁ = 0; then c := v₀ u − v₁ t satisfies
+     v = c • evec φ and c² = 1.
+   - esign: the sign function φ ↦ w φ 0 cos (φ/2) − w φ 1 sin (φ/2), continuous, values ±1.
+   - constancy by the intermediate value theorem (mem_range_of_exists_le_of_exists_ge): a sign
+     change would force a zero.
+   - conclusion: w φ = esign φ • evec φ, and evec flips, so w does.
+
+So the "forced" claim now holds in the only form in which it is true. What remains outside Lean is
+unchanged and small: the tangent-plane identification and the Taylor step.

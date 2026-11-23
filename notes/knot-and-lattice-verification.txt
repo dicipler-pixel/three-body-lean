@@ -1,0 +1,79 @@
+INDEPENDENT VERIFICATION OF THE 3-6-9 TABLES
+============================================
+Subject: the knot table and the lattice shell counts in 369-three-fold-protection/report.pdf
+(the "3-6-9: straw man to the max" report, 28 October 2026).
+Method: the numbers in the report were computed by the author's own SnapPy/sympy scripts
+(scripts/knots.py, scripts/battery.py). This file checks the same numbers against two external
+databases, run locally, so the check does not share code with the computation being checked.
+
+SOURCES AND QUERIES
+-------------------
+KnotInfo: C. Livingston and A. H. Moore, KnotInfo: Table of Knot Invariants, knotinfo.org, read
+  through database_knotinfo release 2026.11.2 (wheel fetched and SHA-256 verified by the skill
+  script; read locally, nothing sent anywhere). LinkInfo likewise. Queried 2026-11-23.
+  Commands: knotinfo.py version | show KNOWN determinant torsion_numbers dt_name
+            | find "determinant>=27" "determinant<=27" crossing_number=9 --columns alexander_polynomial
+
+OEIS: entries A004009, A004016, A008408, A004018, A000143, read from their b-files
+  (oeis.py terms Axxxxxx --count 200). CC BY-SA 4.0. Queried 2026-11-23.
+  https://oeis.org/A004009 (theta series of E_8), A004016 (theta series of hexagonal A_2),
+  A008408 (theta series of Leech), A004018 (square lattice), A000143 (sum of 8 squares).
+
+KNOT TABLE
+----------
+The report names knots in the DT / Knot Atlas style (K3a1, K9a40, ...). KnotInfo records that
+naming in its dt_name column, so every name maps unambiguously; the Rolfsen names differ, and for
+nine crossings the DT index 40 is NOT Rolfsen 9_40. That is the one trap in this table.
+
+  report name   KnotInfo   dt_name   crossings   determinant   H1(Sigma_2) 3-primary   colours   report
+  3_1           3_1        3a_1      3           3             Z/3                        9         9
+  4_1           4_1        4a_1      4           5             trivial                    3         3
+  5_2           5_2        5a_1      5           7             trivial                    3         3
+  6_1           6_1        6a_3      6           9             Z/9                        9         9
+  K9a40         9_35       9a_40     9           27            Z/3 + Z/9                  27        27
+  K11n34        11n_34    (n/a)     11          1             trivial                    3         3
+  K11n42        11n_42    (n/a)     11          1             trivial                    3         3
+
+Determinants: all seven agree with KnotInfo's determinant column.
+Alexander polynomials: all seven agree (3_1: 1-t+t^2; 4_1: 1-3t+t^2; 5_2: 2-3t+2t^2;
+  6_1: 2-5t+2t^2; 9_35: 7-13t+7t^2; 11n_34 and 11n_42: 1).
+Colouring counts: KnotInfo does not store Fox colourings, but it stores torsion_numbers, whose
+  n=2 entry is the torsion of H_1 of the double branched cover. The count of Fox 3-colourings is
+  3^(1+v) where v is the 3-rank of that group (equivalently 3 * |H_1(Sigma_2) (x) Z/3|).
+  Applied above: v = 0,0,0,1,2,0,0 gives 3,3,3,9,27,3,3 -- every entry matches the report,
+  including the two the report singles out: the trefoil has 9, the Conway knot 11n34 has only the
+  3 trivial colourings.
+The 5-colouring column in the report was NOT checked: KnotInfo has no colouring column and I did
+not rebuild the colouring matrices (no SnapPy in this environment).
+
+LATTICE SHELL COUNTS
+--------------------
+  E_8     A004009: a(n) = 240*sigma_3(n) verified for every n = 1..40 (not just the residues), and
+          {a(n) mod 9 : n = 1..40} = {0, 3, 6}. First five: 240, 2160, 6720, 17520, 30240 --
+          exactly the report's list.
+  A_2     A004016: {a(n) mod 9 : n = 1..60} = {0, 3, 6}. First seven: 6, 0, 6, 6, 0, 0, 12 --
+          exactly the report's list.
+  Leech   A008408: a(n) mod 9 = 0 for every n = 1..29. Counts at norm 2, 4, 6 are 0, 196560,
+          16773120 -- exactly the report's values.
+  Z^2     A004018: {a(n) mod 3 : n = 1..60} = {0, 1, 2}, so the control fails as the report says.
+  Z^8     A000143: {a(n) mod 3 : n = 1..20} = {0, 1, 2}, likewise.
+
+So every lattice claim in the report, and every knot-table entry except the 5-colouring column,
+is confirmed by data computed outside this project. No discrepancy was found.
+
+TWO TRAPS, RECORDED BECAUSE BOTH COST TIME
+------------------------------------------
+1. A004011 is the theta series of D_4, not of E_8. The first search snippet looked like E_8
+   (the b-file begins 1, 24, 24, 96, 24) and the entry's own name is what settled it. The E_8 theta
+   series is A004009. Do not take an A-number from a search result; read the [name] section.
+2. "K9a40" is the DT name of Rolfsen 9_35, whose determinant is 27, not of Rolfsen 9_40, whose
+   determinant is 75. Matching numbers to a knot by Rolfsen name alone would have produced a false
+   error report against a correct table. KnotInfo's dt_name column is the authority for the mapping.
+
+WHAT THIS DOES AND DOES NOT ESTABLISH
+-------------------------------------
+A database match is evidence, not proof: it shows the report's numbers agree with KnotInfo
+(release 2026.11.2) and the OEIS entries on the stated ranges. It does not re-derive the values
+from the definitions, and it says nothing about claims outside these two tables. The OEIS entries
+themselves are contributed data; the identities used (theta series of E_8 = E_4, of Leech =
+E_12 - (65520/691) Delta) are quoted in those entries, not reproved here.
