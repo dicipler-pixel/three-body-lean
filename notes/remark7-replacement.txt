@@ -1,0 +1,80 @@
+REMARK 7 - REPLACEMENT TEXT FOR THE PAPER
+=========================================
+The paper itself is not in this repository (it is the Zenodo PDF, record 22080702, DOI
+10.5281/zenodo.20764188). This file is the drop-in replacement for Remark 7 and for the one
+sentence in Sec. 8 that cites it, plus the two errata. Paste into the manuscript source; the
+in-repo places (README table row, Lean docstring) are already edited and match this wording.
+
+-------------------------------------------------------------------------------
+REMARK 7 (replace the whole remark)
+-------------------------------------------------------------------------------
+Remark 7 (Why the closing is quadratic, and what the symmetry does not do). The equilateral
+configuration is fixed, up to orientation, by the relabelling group: the stabiliser of a pole
+acts on the tangent plane through an element of order three, whose characteristic polynomial
+has discriminant -3 and so no real root. The real 2-plane is therefore irreducible, and every
+invariant symmetric 2-tensor at the pole is a multiple of the identity. This is a pointwise
+statement about the tensor at the fixed point.
+
+It does not extend to the first order, and it is worth saying so plainly. The symmetric family
+Q(x,y) = (1/2)[[2 + x, -y], [-y, 2 - x]] is positive definite on the disc x^2 + y^2 < 4 -- and
+not beyond it, where the direction (0,1) gives 1 - r/2 <= 0 -- and invariant under the full D3
+stabiliser of the pole, yet its first jet is anisotropic: its eigenvalues are
+1 -+ sqrt(x^2 + y^2)/2, so the gap is sqrt(x^2 + y^2) rather than its square. The unoriented
+eigenline does come back to itself, but the field of unit eigenvectors does not: on each circle of
+radius r > 0 about the pole, a continuous unit eigenvector field for the larger eigenvalue returns
+negated after one circuit, and the flip is forced. Without the unit-norm hypothesis it is false,
+any nonvanishing scalar multiple of an eigenvector field being again one; and at r = 0 the
+eigenvalue is repeated, so "larger" has no meaning. Symmetry alone therefore does not forbid the
+conical alternative that Sec. 8 associates with breaking it.
+
+What makes the closing quadratic here is the fold. Phi is the restriction of one linear map, so
+the tangent planes at w and at -w coincide and the differentials agree on them; hence
+M(-w) = M(w), where in the coordinates of Sec. 2 the antipode is (vartheta, phi) ->
+(pi - vartheta, phi + pi). The explicit formula diag(cos^2 vartheta, 1) is even in the normal
+coordinate, so its odd Taylor coefficients vanish, and the surviving quadratic term is the
+anisotropy computed in Theorem 5, sin^2 vartheta, whose leading term is vartheta^2. The integer
+winding is separate again: the soft eigenline is e_vartheta, which is smooth and single-valued
+along latitude circles.
+
+The order of the degeneracy is thus a property of the distance map, not of the relabelling
+group. The group explains why the two poles are indistinguishable, and nothing further.
+
+-------------------------------------------------------------------------------
+SEC. 8, p5 - replace the opening sentence
+-------------------------------------------------------------------------------
+CURRENT: "Theorem 5 attributes the trivial holonomy to Z3 and therefore predicts that breaking
+the mass symmetry should produce the generic alternative. It does."
+
+REPLACEMENT: "The equal-mass operator is a fold at each pole, so its gap closes quadratically.
+Breaking the mass symmetry destroys that normal form, and Proposition 13 shows the generic
+conical behaviour replacing it."
+
+(Reason for the change: Theorem 5's statement says nothing about Z3; the attribution is in
+Remark 7, and as the counterexample above shows it is not the group that does the work. The
+replacement also makes Prop. 13 a test of a normal-form prediction, which is the stronger claim
+and the one the numbers actually support.)
+
+-------------------------------------------------------------------------------
+ERRATUM 1 (p2, Sec. 2)
+-------------------------------------------------------------------------------
+CURRENT: "the Z3 symmetry that protects the equilateral degeneracy in Sec. 5 is already visible
+here"
+FIX: "in Sec. 4" -- the equilateral degeneracy is Sec. 4 (Theorem 5 and Remark 7); Sec. 5 is the
+fold.
+
+-------------------------------------------------------------------------------
+ERRATUM 2 (p5, Sec. 8)
+-------------------------------------------------------------------------------
+Covered by the replacement above: the sentence attributes to Theorem 5 a statement about Z3
+that Theorem 5 does not make.
+
+-------------------------------------------------------------------------------
+WHAT THIS TEXT DOES NOT CLAIM
+-------------------------------------------------------------------------------
+- It does not claim the Z3 action forces the quadratic closing. It says the opposite, with the
+  counterexample.
+- It does not claim the two poles are related by a symmetry in the sense of forcing the same
+  spectrum; the evenness of M is what gives M(w) = M(-w), and the relabelling story is about
+  the labelled triangle, not about M.
+- It does not claim the conical behaviour at unequal masses is proved; Prop. 13 remains
+  numerical, and says so.

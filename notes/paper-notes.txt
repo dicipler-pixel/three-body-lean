@@ -1,0 +1,731 @@
+PAPER NOTES - running file
+==========================
+
+Subject: "The Three-Body Problem, Operator-First: A Complete Spectral Anatomy of
+Relational Transport on the Shape Sphere ..." (Jeromie Beasley).
+Paper: Zenodo v3, record 22080702, DOI 10.5281/zenodo.20764188 -> newest version.
+        PDF: three_body_operator_first_v3.pdf, md5 e3c10ba8d289f537d1afa15958ae954c,
+        downloaded 2026-xx-xx into .scratch/paper/ (not tracked).
+Repo:   this one. Lean: ThreeBody/Basic.lean (22 theorems), 369-three-fold-protection/.
+Purpose of this file: keep the audit findings AND the verbal lay-out of how the
+result should read in a paper, as the work goes. Append, do not overwrite.
+
+Status markers: [x] done, [ ] open, [?] to be checked by someone other than me.
+
+-------------------------------------------------------------------------------
+0. WHY THIS FILE EXISTS
+-------------------------------------------------------------------------------
+The paper has two layers that must not be confused:
+  (i)  a computation: M = dPhi^T dPhi = diag(cos^2 vartheta, 1), gap = sin^2 vartheta,
+       gap/vartheta^2 -> 1. These are exact and now formalised.
+  (ii) an explanation: WHY the closing is quadratic rather than conical.
+       That is Remark 7, and it is a symmetry argument, not a computation.
+A formal statement is evidence only for the statement it states. So each explanation
+in the paper needs its own line-by-line check, and the check has to be able to come
+out negative. Remark 7 is the first one we ran.
+
+-------------------------------------------------------------------------------
+1. WHAT IS CLAIMED, IN THREE PLACES (the chain paper -> README -> Lean)
+-------------------------------------------------------------------------------
+Paper, Remark 7 (v3, p.3), verbatim:
+  "The equilateral configuration is fixed by the Z3 relabelling of the three bodies,
+   and an invariant symmetric 2-tensor at a fixed point of that action must be a
+   multiple of the identity to leading order. The linear anisotropy is forbidden by
+   symmetry, which is why the degeneracy is quadratic and the winding integer rather
+   than half-integer. A generic three-body problem with unequal masses breaks Z3 and
+   is the place to look for a genuine conical intersection."
+
+README table row: "A symmetric 2-tensor commuting with the 120 deg rotation is a
+multiple of the identity" -> z3_isotropic.
+
+Lean, ThreeBody/Basic.lean:
+  noncomputable def rot : Matrix (Fin 2) (Fin 2) R := !![-1/2, -(sqrt3/2); sqrt3/2, -1/2]
+  theorem z3_isotropic (a b d : R) (h : rot * !! [a, b; b, d] = !! [a, b; b, d] * rot) :
+      b = 0 AND a = d
+
+Three different statements are being used as one. The translation:
+  paper "invariant"  -> repo "commuting"      (equivalent here only because rot is
+                                               orthogonal: rot^T rot = 1 is not in Lean)
+  paper "at a fixed point of that action" -> Lean: a bare 2x2 matrix statement, no
+                                               action, no fixed point, no tangent space
+  paper "to leading order" -> Lean: exact zeroth order, and nothing about the next order
+LIMITATIONS.md already says this much ("a statement about 2x2 matrices, not about the
+Z3 action on shape space"), but the README row reads as if it were the paper's claim.
+
+-------------------------------------------------------------------------------
+2. WHAT THE LEAN THEOREM ACTUALLY GIVES  [x]
+-------------------------------------------------------------------------------
+True, and its proof is complete: rot here is rotation by +120 deg (det 1, order 3);
+a symmetric M commuting with it is scalar. This is the zeroth-order statement: at the
+fixed point, an invariant symmetric 2-tensor on the 2-plane is a multiple of I.
+Sharpness: the hypothesis needs sin(theta) != 0. For rot = -I (180 deg) every symmetric
+M commutes and the conclusion fails; for a generic angle != 0, pi it holds, because the
+commutant of a rotation with sin != 0 is {alpha I + beta J} and symmetry forces beta = 0.
+So what does the work is IRREDUCIBILITY of the real 2-dim representation (no invariant
+line), not the order 3. Order 3 is not what is being used, even though the theorem is
+named for it. Worth one sentence in the paper; a name that overstates the content is a
+claim too.
+
+-------------------------------------------------------------------------------
+3. THE FINDING: "THE LINEAR ANISOTROPY IS FORBIDDEN BY SYMMETRY" IS FALSE  [x]
+-------------------------------------------------------------------------------
+Test: let L: R^2 -> Sym^2(R^2) be a first-order (linear) term of a symmetric tensor
+family at the fixed point, and ask for equivariance L(g.p) = g L(p) g^T.
+
+  Z3 only (g = rot, order 3):        solution space is 2-DIMENSIONAL. Nonzero linear
+                                     terms exist. (sympy, .scratch/audit/linear_term2.py)
+  Z3 plus one reflection (full D3
+  stabiliser of the pole):           still 1-DIMENSIONAL. A nonzero linear term
+                                     survives the whole relabelling group.
+
+So equivariance does not forbid the linear term; the relabelling symmetry is not the
+reason the closing is quadratic. (Sanity check on the shape of the answer: a traceless
+symmetric form is the 2-dim irrep with character e^{2i theta}; a linear map
+L(p) = A p must satisfy A R = R^{-2theta} A, i.e. A R = R A for theta = 120 deg,
+which is satisfied by A complex-linear, a 2-parameter family.)
+
+What does forbid it, in this problem: Phi(w) = (w1, w2) is the restriction of a LINEAR
+map to T_w S^2, and T_{-w} = T_w, so dPhi_{-w} = dPhi_w as maps of that same plane.
+Hence M(-w) = M(w) exactly: M is EVEN in the normal coordinate at the pole, so every
+odd-order term vanishes, and the linear one first of all. Equivalently nabla M = 0 at
+the pole, by the point symmetry w -> -w of the sphere there. This is a fact about this
+Phi, not about Z3. [x] M(w) = M(-w): diag(cos^2 vartheta, 1) with (vartheta, phi) ->
+(pi - vartheta, phi + pi).
+Note what is NOT excluded by evenness: the quadratic term is genuinely anisotropic --
+M = I - (x^2+y^2) diag(1,0) + O(4) in Cartesian coordinates -- which is exactly
+gap = sin^2 vartheta. So the correct statement is: evenness kills the odd orders, the
+quadratic term survives and is the gap.
+
+Consequence for the paper's logic: Theorem 5 does not need Remark 7. Theorem 5's proof
+computes gap = sin^2 vartheta directly. Remark 7 is an explanation of that computation,
+and as written it gives the wrong reason. Two possible repairs:
+  (A) keep Remark 7 but attribute the vanishing to evenness (Phi linear, T_{-w} = T_w),
+      and keep Z3 only for the zeroth-order statement. One extra sentence.
+  (B) demote it: "the closing is quadratic because Phi is the restriction of a linear
+      map, so M is even at the pole; the Z3 statement is the pointwise shadow of this."
+Either way the "which is why ... the winding integer rather than half-integer" part
+needs its own argument (the eigenline is e_vartheta, smooth and single-valued along
+latitude circles: that is in Theorem 5's verification, not in Remark 7).
+
+-------------------------------------------------------------------------------
+4. HOW THIS SHOULD READ IN THE PAPER (verbal lay-out, first pass)
+-------------------------------------------------------------------------------
+Keep the order: operator -> two loci -> equilateral -> the remark. But split the
+remark into its two orders, because they have different proofs and different status:
+
+  Remark (why no linear term). Three statements, in increasing strength:
+   (a) POINTWISE. At the equilateral point the tangent action of the relabelling group
+       is a rotation, and the real 2-plane carries an irreducible representation of it;
+       hence every invariant symmetric 2-tensor there is a multiple of the identity.
+       (Formal: z3_isotropic, the 2x2 core; the passage from "invariant tensor" to
+       "commuting matrix" is rot^T rot = 1, not formalised.)
+   (b) FIRST ORDER. Equivariance alone does NOT kill the linear term -- here is the
+       2-parameter family that survives, and the 1-parameter family that survives the
+       full D3. So (a) does not imply (b); a reader who thinks symmetry gives quadratic
+       closing for free is wrong, and the paper currently tells them it is free.
+   (c) THE ACTUAL REASON. M = dPhi^T dPhi restricted to T_w S^2, Phi linear, so
+       dPhi depends only on the unoriented plane: M(w) = M(-w). Even in the normal
+       coordinate => no odd terms => quadratic closing, with the quadratic term
+       computed to be sin^2.
+Also say what the winding integer needs: the soft eigenline is e_vartheta.
+
+In the README table, the z3_isotropic row should say "at the equilateral point the
+invariant tensor is scalar (zeroth order)" and not be offered as the reason for the
+quadratic closing.
+
+-------------------------------------------------------------------------------
+5. BUILD STATUS IN THIS VM  [x partly]
+-------------------------------------------------------------------------------
+[x] lean ThreeBody/Basic.lean with this VM's toolchain (Lean 4.35.0 + the Mathlib built
+    at /opt): 0 errors, 5.5 s, three deprecation warnings only (if_pos/if_neg at
+    lines 192, 195 in reciprocity). So the proof text elaborates on a newer Mathlib
+    than the pinned one; the claims are version-robust across at least this pair.
+[ ] lake build with the repo's own pin (lean-toolchain 4.34.1, Mathlib tag v4.34.1):
+    running in the background; needs to fetch and cache Mathlib v4.34.1 (the VM's
+    /opt/mathlib is 4.35.0 and cannot be reused).
+[x] CI story: .github/workflows/build.yml checks build, kernel replay, an axiom audit
+    (propext, Classical.choice, Quot.sound) and three false controls -- not run here
+    (no ability to run the repo's CI from this VM).
+
+-------------------------------------------------------------------------------
+6. OPEN
+-------------------------------------------------------------------------------
+[ ] Independent checks from the swarm (5 members, moonshotai/kimi-k3.1-pro): verify or
+    break section 3 above; check the paper wording against the Lean statement; check
+    whether anything downstream uses Remark 7; look for a formal counterexample to
+    "equivariance forbids the linear term".
+[ ] Decide repair (A) or (B) in section 3 and edit paper + README + docstring together,
+    so the three places say the same thing.
+[?] The same treatment for the other explanatory remarks: Rem. 2 (what the replacement
+    eliminates), Rem. 12 (branch condition), Rem. 19 (compression vs restriction). The
+    pattern to watch: an exact computation plus a symmetry story told about it.
+
+-------------------------------------------------------------------------------
+7. UPDATE: BUILD CLOSED, FINDING FORMALLY CHECKED, SWARM AGREEING  [x]
+-------------------------------------------------------------------------------
+BUILD.
+[x] Pinned build: `lake build` with the repo's own pin (lean-toolchain 4.34.1,
+    Mathlib tag v4.34.1) COMPLETED SUCCESSFULLY in this VM: 8925 jobs, exit 0, the same
+    three deprecation warnings (if_pos/if_neg, lines 192/195). Done with the 4.34.1
+    toolchain in ~/.elan/toolchains/leanprover--lean4---v4.34.1/bin (the VM's default
+    `lake` is 4.35 and fails to build Mathlib's cache tool: "Cache/Requests.lean:988
+    Missing cases Lake.PackageEntrySrc.path" -- a toolchain mismatch, not a repo bug).
+    `lake exe cache get` downloaded Mathlib's oleans, so this was not a from-source build.
+    Cost: .lake is now 7.2 GB, gitignored; remove it if the cache is not wanted.
+[x] Unpinned check: `lean ThreeBody/Basic.lean` on this VM's Lean 4.35.0 + Mathlib:
+    0 errors, 5.5 s. So the file survives a Mathlib version pair, not just its pin.
+[ ] NOT run: the repo's CI workflow itself (kernel replay, axiom audit, the three false
+    controls). Everything below is my own replay, not CI.
+
+FINDING, NOW MACHINE-CHECKED. Referee file: .scratch/audit/Gap.lean (Lean 4.35.0 +
+Mathlib, compiles with 0 errors and 0 warnings, no sorry). Contents:
+  R_orth   : Rᵀ*R = 1
+  R_orth'  : R*Rᵀ = 1
+  R_sq     : R*R = Rᵀ,  R_cube : R*R*R = 1,  R_det : R.det = 1
+  invariant_iff_commute : (Rᵀ*M*R = M) ↔ (M*R = R*M)      -- the paper's "invariant"
+                                                          vs the Lean hypothesis
+  L, L_symm, L_smul, L_zero, L_nonzero, L_equivariant
+  linear_term_not_forbidden : ∃ Lf symmetric, linear, nonzero, Lf (R p) = R Lf p Rᵀ
+  gram_even : cos (π - ϑ)^2 = cos ϑ^2                    -- the real reason, see below
+So the two claims are separated by machine: the zeroth-order statement is true, and the
+first-order statement the paper asserts ("linear anisotropy forbidden by symmetry") is
+false for the same ℤ₃. The gap is no longer an opinion.
+
+SWARM (5 members, moonshotai/kimi-k3.1-pro, max effort), board so far:
+  m4 (paper text)  [x] same counterexample found independently; their family
+      A(x,y) = (1/2)[[x,-y],[-y,-x]] is ℤ₃-equivariant, symmetric, and has eigenvalues
+      ±√(x²+y²)/2, i.e. gap = √(x²+y²): LINEAR closing, with the usual −1 monodromy.
+      So ℤ₃ symmetry permits a genuine conical point. Stronger than my version: it also
+      refutes the implied "Z3 ⇒ no conical intersection". (This is not exotic: C3
+      symmetry famously *protects* Dirac points, e.g. graphene's K points.)
+  m3 (sharpness)   [x] for Rθ = [[c,-s],[s,c]] the commutator is
+      RθS - SRθ = [[-2sb, s(a-d)],[s(a-d), 2sb]], so scalar iff sinθ ≠ 0 (θ ∉ πZ), with
+      diag(1,0) as the counterexample at θ = 0, π. Same conclusion for every nonidentity
+      real A with A³ = I. Real 2-plane is irreducible but not absolutely irreducible
+      (the skew J is in the real centralizer), so symmetry of S is essential.
+      Also: without orthogonality, invariance and commuting part company --
+      A = [[0,-1],[1,-1]] (A³ = I), B = [[2,-1],[-1,2]] SPD, AᵀBA = B but AB ≠ BA.
+      That is the exact hole the paper's wording steps over, and it is closed by R
+      being a rotation (R_orth, R_orth' above).
+  m1, m5, m2 still running: repo-level wiring, Lean artifact audit, red-team synthesis.
+
+Again the correct reason the linear term is absent, for the paper:
+  M = dΦᵀ dΦ with Φ the restriction of one LINEAR map to T_w S². Since T_{-w} = T_w,
+  dΦ_{-w} = dΦ_w, hence M(-w) = M(w). Even in the normal coordinate at the pole, so
+  every odd term vanishes and the closing is quadratic. The quadratic term itself is
+  anisotropic (in Cartesian coordinates M = I - (x²+y²)diag(1,0) + O(4)) and that
+  anisotropy IS the gap. This uses no relabelling symmetry at all.
+  Alternative one-line statement, if a reader prefers tensors: the Gram operator is a
+  function of the unoriented tangent plane, i.e. of w ⊗ w / |w|², so it is analytic in
+  the second symmetric power and has no term linear in w.
+
+-------------------------------------------------------------------------------
+8. ADDENDUM: THE SHARPER TRUE STATEMENT (verified myself, .scratch/audit/verify_members.py)
+-------------------------------------------------------------------------------
+(a) THEOREM (what the order-3 hypothesis really gives). Let A be a real 2x2 matrix with
+    A^3 = I and A != I. Then every symmetric S with AS = SA is a multiple of I.
+    Proof, one line: x^3 - 1 has distinct roots, so A is diagonalisable; A != I forces the
+    eigenvalue pair {omega, omega^2}, so A is cyclic and its commutant is span{I, A}.
+    If S = alpha I + beta A is symmetric then beta (A - A^T) = 0, and A = A^T would make A
+    real-diagonalisable with eigenvalues in {1}, i.e. A = I. Hence beta = 0.
+    Consequences: no rotation needed, no angle needed, orthogonality only enters to convert
+    "invariant" (R^T M R = M) into "commuting" (MR = RM). That conversion is exactly
+    `invariant_iff_commute` in .scratch/audit/Gap.lean.
+    Verbal form for the paper: "the relabelling acts through an order-three element, and a
+    real 2-plane is an irreducible representation of an order-three element; hence the only
+    invariant symmetric 2-tensor at the fixed point is a multiple of the identity." Keep
+    "irreducible", drop "120 degrees" as the reason -- 120 is how it happens here, not why.
+    [x] Checked in sympy for general theta: R_theta S - S R_theta = [[-2 b sin t, (a-d) sin t],
+    [(a-d) sin t, 2 b sin t]], so scalar iff sin t != 0; at t = 0, pi, diag(1,0) commutes.
+
+(b) THE COUNTEREXAMPLE, in the sharpest form (m4's, re-verified): on the tangent plane put
+    A(x,y) = (1/2) [[x, -y], [-y, -x]]. Then
+      - A is symmetric for every (x,y);
+      - A(R(x,y)) = R A(x,y) R^T for R the 120-degree rotation, exactly;
+      - char poly = (-4 lambda^2 + x^2 + y^2)/4, so the eigenvalues are +- sqrt(x^2+y^2)/2
+        and the gap is sqrt(x^2+y^2): LINEAR, i.e. a genuine conical point, with the
+        standard -1 eigenline monodromy.
+    So a Z3-symmetric symmetric-tensor family can have a conical point. The paper's
+    "the linear anisotropy is forbidden by symmetry, which is why the degeneracy is
+    quadratic and the winding integer rather than half-integer" is false as a symmetry
+    statement. (Not a curiosity: in two dimensions a C3 axis protects, rather than
+    forbids, a Dirac/conical point -- graphene's K points are the standard example. The
+    paper's own Sec. 8 finding, that breaking Z3 gives a conical intersection, is
+    therefore the right observation with the wrong explanation: what the equal-mass
+    problem has that (1,2,3) does not is the explicit form M = diag(cos^2, 1), not merely
+    more symmetry.)
+    NOTE for the paper: this cuts both ways and is worth saying explicitly. If the
+    protection is not group-theoretic, then the sentence "a generic three-body problem
+    with unequal masses breaks Z3 and is the place to look for a genuine conical
+    intersection" is a good empirical prediction with a wrong justification.
+
+(c) WHERE THE QUADRATIC CLOSING COMES FROM. Two equivalent statements, both checkable:
+      - M is even at the pole: M(w) = M(-w), because T_{-w} = T_w and dPhi_{-w} = dPhi_w
+        (Phi is the restriction of one linear map). Odd terms vanish; the quadratic term
+        survives and is anisotropic.
+      - Equivalently: M is a function of the unoriented plane, i.e. of w (x) w / |w|^2.
+    In Cartesian coordinates at the pole: M = I - (x^2 + y^2) diag(1,0) + O(4), so the gap
+    is exactly x^2 + y^2 to leading order, which is Theorem 5's sin^2 vartheta. Nothing in
+    this step uses the relabelling group.
+
+(d) STATUS OF THE ZERO-COST CLAIM. z3_isotropic is TRUE and its proof is complete; the
+    README row, the docstring ("no linear anisotropy survives at the equilateral point")
+    and the paper's Remark 7 each pass one step beyond it. The theorem covers the tensor
+    AT the point; the prose claims the LINEAR TERM is absent. Between them sits a step
+    that is false in general and true here for a different reason.
+
+-------------------------------------------------------------------------------
+9. THE SHAPE OF THE PAPER SECTION, NOW THAT THE CONTENT IS FIXED
+-------------------------------------------------------------------------------
+Point to make in one paragraph, in this order -- each sentence is something we can defend:
+  1. The equilateral point is a fixed point of the relabelling action; the tangent action is
+     an order-three rotation, and a real 2-plane is irreducible for it. Therefore the only
+     invariant symmetric 2-tensor there is scalar. (Zeroth order. Formal: z3_isotropic,
+     plus orthogonality to match the paper's word "invariant".)
+  2. That does NOT give the quadratic closing, and the paper should say so: an explicit
+     order-three-equivariant linear term exists (write it), and it produces a conical point.
+     Anyone who thinks symmetry pays for the quadratic term is wrong here.
+  3. What pays for it is the fold: Phi is linear, so M depends on the shape only through the
+     unoriented tangent plane, hence M(w) = M(-w), hence no odd term, and the quadratic term
+     is the computed sin^2 vartheta.
+  4. Consequence, stated conservatively: the equilateral degeneracy is quadratic because the
+     distance map is a fold there (Prop. 8), not because of Z3. Z3 is why the two equilateral
+     points look alike and why the first-order term is not *forced* by anything else -- no,
+     better: Z3 plays no role in the closing order at all; it is used only for the
+     pointwise isotropy and for the paired structure of the two poles.
+  This is a nicer story than the original, because it separates two phenomena the paper
+  currently merges, and it makes Prop. 8 (the fold) carry the weight it already carries.
+
+-------------------------------------------------------------------------------
+10. m3'S SUBMISSION ACCEPTED (verified by me; artifacts under
+    .ultramath/smwt22xl7/m3/, report MathAudit.md)
+-------------------------------------------------------------------------------
+What it adds beyond sections 3 and 8:
+[x] The precise algebraic statement of the theorem: Rθ S - S Rθ =
+    [[-2b sinθ, (a-d) sinθ],[(a-d) sinθ, 2b sinθ]] => scalar iff sinθ != 0. Machine-checked
+    in AngleChecks.lean (rotation_centralizer), with the 0-angle counterexample. So the true
+    hypothesis is "the rotation is not +-I", and the notion doing the work is irreducibility.
+[x] The general lemma, which is the cleanest way to say it: on a real Euclidean plane, every
+    self-adjoint S commuting with A is scalar iff A is not self-adjoint. Hence every faithful
+    2-dim real representation of Z3 has the property (A^3 = I, A != I => A not self-adjoint,
+    since self-adjoint would force real eigenvalues, all 1, so A = I).
+[x] The exact centralizer caution: the 120-degree rotation's real centralizer is
+    {pI + qJ} = C, so the skew J commutes too; symmetry of S is essential, not decoration.
+    "Real Schur" gives the centralizer as a division algebra, not as R.
+[x] The invariant/commuting bridge is checked both ways in Lean (rot_orthogonal,
+    rot_orthogonal_right, z3_commute_iff_invariant, z3_bilinear_invariant_isotropic), so the
+    paper's word "invariant" does reach the Lean hypothesis -- for this matrix.
+[x] The counterexample in paper shape: H(x,y) = I + [[x,-y],[-y,-x]] is Z3-equivariant,
+    H(0) = I, eigenvalues 1 -+ sqrt(x^2+y^2) (gap 2r, linear), + eigenline v(phi) =
+    (cos(phi/2), -sin(phi/2)) with v(phi+2pi) = -v(phi). Verified in Computations.py and
+    re-run by me. This is the version to quote in the paper: it has every property the
+    paper says Z3 forbids, including the half-integer monodromy.
+[x] DOWNSTREAM USE, which changes the priority: the unformalised attribution is not a
+    footnote, it is load-bearing prose in three later places --
+      p2, Sec. 2: "the Z3 symmetry that protects the equilateral degeneracy in Sec. 5"
+      p5, Sec. 8: "Theorem 5 attributes the trivial holonomy to Z3 and therefore predicts
+                  that breaking the mass symmetry should produce the generic alternative.
+                  It does."
+      p6, Sec. 9 and Rem. 15: the equal-mass touching "forced by symmetry", "symmetry-forced
+                  axis".
+    In Lean nothing uses it: z3_isotropic has no caller (git grep). So the paper's plot
+    ("the symmetry protects, so breaking it gives a conical intersection") rests on a
+    premise that the counterexample above refutes as a symmetry statement. The empirical
+    finding of Sec. 8 stands; the explanation needs rewriting.
+[x] Axioms: z3_isotropic and all added corollaries depend only on [propext,
+    Classical.choice, Quot.sound] in my re-run (Lean 4.35.0 + Mathlib here).
+
+Consequence for the rewrite, sharper than section 9: the paper should NOT say "Z3 is why
+the closing is quadratic", and it should NOT say "breaking Z3 is why the conical point
+appears". What survives, and is enough for the physics:
+  - the two poles are exchanged by an odd relabelling, so the operator is mirror-symmetric
+    between them (Z3, used at zeroth order);
+  - the closing order is a property of the fold (Phi linear, M even);
+  - the equal/unequal contrast is a property of the explicit M, and the equal-mass case is
+    protected by the fold structure, not by the group.
+
+-------------------------------------------------------------------------------
+11. m4 ACCEPTED; SWARM CLOSED (solved). FINAL VERDICT TABLE.
+-------------------------------------------------------------------------------
+Swarm smwt22xl7, 5 members, moonshotai/kimi-k3.1-pro, max effort. Accepted: m3 (d1) and
+m4 (d2), both after I re-ran their artifacts. m1, m2, m5 stopped as duplicative.
+
+m4's additions, each verified by me (.scratch/audit/verify_m4.py, Main.lean exit 0):
+[x] The counterexample can be made POSITIVE DEFINITE: Q(v) = I + (1/2)[[x,-y],[-y,-x]] has
+    eigenvalues 1 -+ r/2, so Q > 0 on r < 2, gap = r, monodromy -1. Since the paper's M is a
+    Gram operator, "but M is positive definite" is not an escape.
+[x] Q is invariant under the reflection diag(1,-1) as well as the 120-degree rotation, i.e.
+    under the FULL D3 stabiliser (order 6) of the equilateral point -- the strongest reading of
+    "at a fixed point of that action". The inference still fails. (Matches my own count: the
+    D3-equivariant linear-term space is 1-dimensional.)
+[x] Two paper errata, independent of the audit's main point:
+    - p5 Sec. 8: "Theorem 5 attributes the trivial holonomy to Z3" cites the wrong result.
+      Theorem 5's statement says nothing about Z3; the attribution is Remark 7.
+    - p2 Sec. 2: "the Z3 symmetry that protects the equilateral degeneracy in Sec. 5" --
+      the degeneracy is Sec. 4; Sec. 5 is the fold.
+
+FINAL VERDICT, item by item:
+  z3_isotropic as a matrix theorem ........................... MATCH (complete, sharp, no
+      hidden hypotheses; axioms propext, Classical.choice, Quot.sound)
+  "multiple of the identity" vs "b = 0 and a = d" ............. MATCH (cosmetic; corollary
+      z3_isotropic_multiple / z3_isotropic_scalar)
+  paper "invariant 2-tensor" vs Lean "commuting" ............. BRIDGE, closable and closed
+      (rot orthogonal both ways; commute_iff_pullback_invariant). Missing in the repo.
+  paper "at a fixed point of the Z3 action on shape space" .... GAP, disclosed by
+      LIMITATIONS.md; no tangent-plane action or relabelling derivative in Lean.
+  "linear anisotropy is forbidden by symmetry" ................ FALSE as stated (counterexample
+      above, D3-invariant and positive definite)
+  "which is why the degeneracy is quadratic and the winding
+   integer rather than half-integer" ......................... OVERSTATED: quadratic closing
+      comes from the fold (Phi linear => M even), integer winding from the soft eigenline e_vartheta
+  paper's own gap = sin^2 vartheta computation ............... MATCH, independent of Remark 7
+      (Lean: gap_eq, gap_quadratic)
+  downstream use of the symmetry story ....................... REAL: Sec. 2, Sec. 8 opening,
+      Prop. 14, Rem. 15. No Lean caller of z3_isotropic.
+  order-3 hypothesis: is 120 degrees essential? ............... NO. Any real A with A^3 = I,
+      A != I has scalar symmetric commutant (A is not self-adjoint). Irreducibility, not the
+      angle, does the work; the angle condition that matters is sin(theta) != 0.
+
+-------------------------------------------------------------------------------
+12. PAPER-READY PROSE (drop-in replacements; this is the verbal lay-out)
+-------------------------------------------------------------------------------
+REMARK 7, replacement text:
+
+  Remark 7 (Why the closing is quadratic, and what the symmetry does not do). The equilateral
+  configuration is fixed, up to orientation, by the relabelling group: the stabiliser of a pole
+  acts on the tangent plane through an element of order three, and that real 2-plane is an
+  irreducible representation of it. Hence every invariant symmetric 2-tensor at the pole is a
+  multiple of the identity. This is a pointwise statement, and it is the one the formal core
+  proves.
+  It does not extend to the first order. An explicit symmetric family, Q(v) = 1 + (1/2)[[x, -y],
+  [-y, -x]], is positive definite near the origin and invariant under the full D3 stabiliser,
+  yet its first jet is anisotropic: its eigenvalues are 1 -+ r/2, its gap is r rather than r^2,
+  and its eigenline returns negated after one circuit. Symmetry alone therefore permits exactly
+  the conical alternative that Sec. 8 attributes to breaking it.
+  What makes the closing quadratic here is the fold: Phi is the restriction of one linear map,
+  so the tangent planes at w and -w coincide and dPhi agrees on them, whence M(-w) = M(w). The
+  Gram operator is even in the normal coordinate at the pole, every odd term vanishes, and the
+  surviving quadratic term is the anisotropy computed in Theorem 5, sin^2 vartheta. The integer
+  winding is separate again: the soft eigenline is e_vartheta, which is smooth and single-valued
+  along latitude circles.
+  The order of degeneracy is thus a property of the distance map, not of the relabelling group.
+  The group explains why the two poles are indistinguishable, and nothing else.
+
+SENTENCE TO FIX IN SEC. 8 (p5): "Theorem 5 attributes the trivial holonomy to Z3 and therefore
+predicts that breaking the mass symmetry should produce the generic alternative." Replace the
+attribution and keep the finding, e.g.: "The equal-mass operator is a fold at each pole, so its
+gap closes quadratically; breaking the mass symmetry destroys that normal form, and the
+numerical evidence of Prop. 13 shows the generic conical behaviour replacing it." (Then Prop. 13
+is a test of a normal-form prediction, which is a stronger and more honest claim.)
+
+README TABLE ROW, replacement: "Remark 7 | At the equilateral point an invariant symmetric
+2-tensor is a multiple of the identity (a pointwise statement) | z3_isotropic"
+DOCSTRING, replacement: "...a multiple of the identity. Pointwise only: this does not forbid a
+linear term in a family, which is why the closing order is a separate computation."
+ALSO: fix "Sec. 5" -> "Sec. 4" on p2; fix the Theorem 5 attribution in Sec. 8.
+OPTIONAL, and cheap in Lean given Gap.lean: add the corollaries rot_orthogonal (both sides),
+commute_iff_pullback_invariant, and the scalar-multiple form, so the paper's word "invariant"
+reaches the theorem inside the repo rather than in a referee's file.
+
+-------------------------------------------------------------------------------
+13. WHAT REMAINS UNVERIFIED, AND WHAT I DID NOT TOUCH
+-------------------------------------------------------------------------------
+[ ] The repo's CI itself (kernel replay, axiom audit, the three false controls in
+    FalseControls/). I replayed the axioms by hand (standard three only); I did not run
+    .github/workflows/build.yml.
+[ ] No attempt to formalise the shape-space tangent action, the relabelling derivative, or the
+    "M is even" argument. The evenness argument is a three-line proof but is not in Lean.
+[ ] I did not edit the paper, README, LIMITATIONS.md, docstrings or Basic.lean. The three places
+    must move together; that edit is not made.
+[ ] .lake (7.2 GB) still in the repo from the pinned build; gitignored.
+Sources: paper v3 PDF, Zenodo record 22080702 (parent DOI 10.5281/zenodo.20764188), md5
+e3c10ba8d289f537d1afa15958ae954c, 9 pages, dated 2026-08-22. All data local; nothing sent out.
+
+-------------------------------------------------------------------------------
+14. EDITS APPLIED (this repo) AND RE-AUDIT OUTCOME
+-------------------------------------------------------------------------------
+Made, minimal diffs, theorem statements untouched:
+[x] README.md table row for Remark 7 -> "At the equilateral point an invariant symmetric 2-tensor
+    is a multiple of the identity -- pointwise only, so it does not forbid a linear term in a
+    family".
+[x] ThreeBody/Basic.lean, three places: the file-header bullet (line 15) now says "pointwise; it
+    says nothing about the first-order term of a family"; the section header is now "## Remark 7:
+    at the fixed point the invariant 2-tensor is scalar"; and the docstring no longer claims "no
+    linear anisotropy survives", instead saying the closing is a fact about this particular M.
+[ ] The paper itself: NOT in this repo (Zenodo PDF). Replacement text written to
+    notes/remark7-replacement.txt, with the Sec. 8 sentence and the two errata; the author has to
+    paste it into the manuscript source. The in-repo wording now matches it.
+
+Re-audit against Lean is in notes/remark7-reaudit.txt. Headline: README row and docstring are
+fully carried by Lean; the Remark 7 replacement has 6 assertions carried by named lemmas and 5
+items explicitly flagged as prose or computation (positive definiteness, the -1 monodromy, the
+evenness of M as a statement about M, the "odd terms vanish" Taylor step, and the smoothness of
+the soft eigenline). None of the flagged items contradicts Lean; they are simply not Lean.
+
+Gap.lean grew to carry the new text: Q (the family), Q_symm, Q_eq_half, Q_zero, Q_equivariant,
+Q_reflection (full D3), Q_trace, Q_det, Q_gap_sq, Q_det_pos, Q_linear_jet_nonzero, R_trace,
+R_disc. Compiles exit 0, 0 errors; axioms standard only. Note for anyone extending it: the gap
+squared is x^2 + y^2 (gap r), not 4 r^2 -- I had that wrong for one iteration.
+Basic.lean after the edits: exit 0, no errors, no sorries.
+
+Next, if wanted (cheap): add to the repo, not to the referee file, the three bridge lemmas
+(rot orthogonal both ways, commute_iff_pullback_invariant, scalar-multiple form) and a two-line
+corollary `gram_even : gram vartheta phi = gram (pi - vartheta) (phi + pi)`; that would move four
+of the flagged prose steps into Lean and make the README row's word "invariant" literal inside
+the project.
+
+-------------------------------------------------------------------------------
+15. BRIDGE LEMMAS MOVED INTO THE REPO; CACHE DELETED
+-------------------------------------------------------------------------------
+[x] ThreeBody/Basic.lean now contains, besides z3_isotropic: z3_isotropic_multiple,
+    rot_orthogonal, rot_orthogonal_right, commute_iff_invariant, invariant_isotropic (the paper's
+    literal invariant-tensor hypothesis) and gram_even (the operator at w and at -w). The
+    file-header bullet lists them. README row now names them.
+[x] Verified on BOTH toolchains after the additions: Lean 4.35.0 + /opt Mathlib exit 0, no
+    errors; pinned lake build with lean-toolchain 4.34.1 and Mathlib v4.34.1 exit 0,
+    "Build completed successfully (8925 jobs)", only the three pre-existing deprecation warnings.
+[x] .lake (7.2 GB) and lake-manifest.json deleted, as asked. Disk back to the pre-build state
+    (86 G used on /). Future pinned builds must refetch Mathlib (~75 s with the cache, plus the
+    dependency clones); the unpinned `lean ThreeBody/Basic.lean` is unaffected (it uses /opt).
+[x] Re-audit updated: the evenness flag is cleared as a statement about M, and the
+    invariant-to-commuting bridge is no longer referee-side. Residual flags: positive
+    definiteness, the -1 monodromy, the odd-term Taylor inference, the smoothness of e_vartheta,
+    and the tangent-plane identification.
+
+-------------------------------------------------------------------------------
+16. BOTH REMAINING FLAGS CLOSED IN LEAN
+-------------------------------------------------------------------------------
+[x] Positive definiteness: posDef_of_trace_det (general 2x2 criterion, division-free) and
+    Q_posDef (Q under p0^2 + p1^2 < 4), plus Q_symm, Q_trace, Q_det, Q_gap_linear.
+[x] Monodromy -1: evec = (cos(φ/2), -sin(φ/2)) with evec_unit, evec_half_orthogonal, Q_eigen,
+    Q_eigen_minus, evec_flip. Half a circuit swaps the eigenlines; a full circuit negates.
+    Also Q_equivariant (rot) and Q_reflection (S), so the family is D3-invariant as the
+    counterexample requires.
+[x] Independent confirmation: swarm smwt3ujh5 (3 members, kimi-k3.1-pro) produced the same two
+    results from scratch in separate files; both accepted after I compiled them and read the
+    statements. m2's positive_quadraticForm_of_symmetric_of_pos_trace_of_pos_det and m1's
+    eigenvector_large / v_antiperiodic are the same statements I proved. m3 is attempting the
+    stronger "every continuous unit eigenvector field flips" statement.
+[x] Verification: Lean 4.35.0 + /opt Mathlib exit 0 with the new section; pinned build being
+    re-run (Mathlib v4.34.1 had to be refetched after the cache deletion).
+Still prose: the "forced flip" (if m3 lands it, add it), the tangent-plane identification, and the
+single Taylor inference. Nothing else in the revised Remark 7 is unbacked.
+
+-------------------------------------------------------------------------------
+17. COMMITTED, AND THE ONE CORRECTION THE SWARM FOUND
+-------------------------------------------------------------------------------
+[x] Commit 4b2ef14 "Make Remark 7 pointwise, and prove what it is not": README.md and
+    ThreeBody/Basic.lean (223 insertions, 4 deletions). Verified before committing on BOTH
+    toolchains: Lean 4.35.0 + /opt Mathlib exit 0; pinned lake build (lean-toolchain v4.34.1,
+    Mathlib v4.34.1) "Build completed successfully (8925 jobs)". No sorry, no axiom.
+[x] .lake (7.7 GB) and lake-manifest.json deleted again after the verification build. Disk back
+    to the 86 G baseline. `lean ThreeBody/Basic.lean` still works (system LEAN_PATH).
+[x] Swarm smwt3ujh5 ended solved, three members accepted:
+    m2  positive definiteness, independently: positive_quadraticForm_of_symmetric_of_pos_trace_of_pos_det
+        + Q_positive_quadraticForm (exact hypotheses, no weakening).
+    m1  the monodromy exhibition, independently: eigenvector_large, v_unit,
+        v_shift_pi_orthogonal, eigenvector_small_shift_pi, v_antiperiodic.
+    m3  A CORRECTION TO MY OWN TASK. I had also asked for the stronger claim "every continuous
+        nowhere-zero unit eigenvector field flips". As I stated it that is FALSE, and m3 produced
+        the Lean counterexample: at r = 1, w φ = (2 + sin(φ/2)) v φ is continuous, nowhere zero,
+        an eigenvector for 1 + r/2 for every φ, and w(3π) = -v π ≠ -3 v π = -w π
+        (file .ultramath/smwt3ujh5/m3/Counterexample.lean, ¬Target3, compiles).
+        The reason: scalar multiples of an eigenvector are eigenvectors, so nonvanishing lets the
+        magnitude wander. The true statement needs unit norm (and r ≠ 0): with ‖w‖ = 1,
+        w = ± v pointwise, the sign is continuous hence constant, and then the flip follows.
+        That unit-norm version is NOT proved, and the repo does not claim it. What the repo proves
+        is the exhibition, which is what the paper text needs.
+
+So the honest status of the "monodromy -1" claim: exhibited (five identities, machine-checked),
+not proved in the strongest conceivable form (no continuous unit selection avoids the flip).
+If that stronger form is ever wanted, the work is: the λ+ eigenspace is spanned by evec, then a
+sign-constancy argument. Two pages of Lean, not one line.
+
+-------------------------------------------------------------------------------
+18. UNIT-NORM MONODROMY PROVED; COMMIT AMENDED
+-------------------------------------------------------------------------------
+[x] The earlier "forced" flag was wrong as stated (a variable multiple of evec is still an
+    eigenvector field; swarm member m3's Lean counterexample). With the norm fixed the flip is
+    forced, and ThreeBody/Basic.lean now proves `evec_monodromy` for r > 0:
+    continuous + unit norm + eigenvector for 1 + r/2 => w (φ + 2π) = -w φ.
+[x] New declarations in the repo alongside it: Q_dot_comm (Q symmetric as a bilinear form),
+    Q_eigen_orth (orthogonality to the smaller eigenline, by symmetry alone -- no trigonometry),
+    Q_unit_eigen (a unit eigenvector is ±evec φ), esign (the sign field), and the constancy step
+    by the intermediate value theorem.
+[x] Checked on Lean 4.35.0 (/opt Mathlib): exit 0, no errors, no sorry.
+[x] Commit 4b2ef14 amended to 48151a7, now including the new section (358 insertions).
+    Both toolchains re-verified before the amend: Lean 4.35.0 exit 0; pinned lake build
+    (v4.34.1) 8925 jobs exit 0. Axioms for the five new theorems: standard three only.
+[ ] Note for the paper: the sentence "the eigenline returns negated" can now be stated as forced
+    rather than exhibited, provided it says "unit eigenvector field". Worth one clause.
+
+-------------------------------------------------------------------------------
+19. THREE INDEPENDENT PROOFS OF evec_monodromy (swarm smwt45hrx, solved)
+-------------------------------------------------------------------------------
+The committed proof is mine (ThreeBody/Basic.lean, commit 48151a7: Q_dot_comm, Q_eigen_orth,
+Q_unit_eigen, esign, constancy by the intermediate value theorem). The swarm produced three more,
+each compiling with the exact same statement on Lean 4.35.0 and each by a different mechanism:
+
+  m1  .ultramath/smwt45hrx/m1/Proof.lean        explicit sign function, sq_eq_one_iff +
+                                                intermediate_value_univ, then cos_add_pi.
+  m2  .ultramath/smwt45hrx/m2/evec_monodromy.lean  clopen partition: the sign sets are open by
+                                                isOpen_lt and complementary by sq_eq_one_iff, so
+                                                isClopen_iff on preconnected R picks one sign.
+  m3  .ultramath/smwt45hrx/m3/Main.lean         complex square cover, no IVT and no clopen
+                                                argument: z(φ) = (a + i b), z² = (cos - i sin)²,
+                                                then isCoveringMapOn_npow plus
+                                                IsCoveringMapOn.existsUnique_continuousMap_lifts
+                                                lift through the square map away from 0; uniqueness
+                                                from z(0) = ±1 gives z = ±c globally.
+
+Three mechanisms, one statement: explicit-sign/IVT, clopen/connectedness, covering-space lift.
+All four proofs (mine included) report the standard three axioms only. The repository keeps one
+proof; the other three are verification, not alternatives to commit.
+
+Why this is worth recording in the paper's favour: the monodromy -1 is now not a numerical
+observation but a theorem with three independent formal proofs, and the sharpness of the
+hypothesis is itself a theorem (unit norm needed; m3 of the earlier swarm has the refutation).
+
+-------------------------------------------------------------------------------
+20. PUBLISHED, AND WHAT THE DOUBLE CHECK FOUND
+-------------------------------------------------------------------------------
+Published state of dicipler-pixel/three-body-lean main:
+  c7cc62f  Fix the theorem-count badge: 22 -> 46
+  c74faec  (upstream) Correct the 3-6-9 byline and document the original manuscript's authorship
+  1012259  Make Remark 7 pointwise, and prove what it is not   <- our commit
+The remote history had been re-created upstream (same subjects, different SHAs, no shared tip
+with the local clone), so our commit was replayed with `git rebase --onto` rather than pushed
+directly; nothing was force-pushed. On the remote line the commit is 1012259 (locally it is
+48151a7, amended from 4b2ef14). Its ThreeBody/Basic.lean blob (87a50fe6...) is byte-identical in
+all three places, so the pinned and 4.35 builds recorded earlier apply unchanged.
+
+Double-check results:
+[x] Published README row carries the corrected Remark 7 wording; the strings "no linear anisotropy
+    survives" and "the 120� symmetry forbids anisotropy" appear nowhere in the published commit.
+[x] Published Basic.lean: 46 theorems, 9 definitions, 0 sorry; compiles on 4.35 (0 errors);
+    axioms for evec_monodromy, Q_posDef, gram_even, invariant_isotropic are the standard three.
+[x] FOUND AND FIXED: the README badge said theorems-22, which was the count before our commit.
+    It is 46 now; corrected in c7cc62f. This was a genuine staleness introduced by our own change.
+[ ] FOUND, NOT FIXED (needs a decision): the paper sentence's sharpness clause ("without the
+    unit-norm hypothesis the statement is false") is backed by a compiling Lean file that is NOT
+    in the repository -- .ultramath/smwt3ujh5/m3/Counterexample.lean. Either commit it (a fourth
+    FalseControls-style check would be the natural home) or soften the clause.
+[ ] FOUND, NOT FIXED (cosmetic): "eigenvalues are 1 +- sqrt(x^2+y^2)/2" and "the gap is r" are
+    derived in prose from Q_trace = 2 and Q_gap_linear; the factorization of the characteristic
+    polynomial is not itself a Lean statement.
+[ ] FOUND, NOT FIXED (cosmetic): "invariant under the full D3 stabiliser" rests on Q_equivariant
+    (rot) and Q_reflection (S = diag(1,-1)); that <rot, S> is D3 (equivalently S rot S = rot^-1)
+    is group theory done in prose, not a Lean lemma.
+[ ] Known and unchanged: "every odd term vanishes" (Taylor step) and the tangent-plane
+    identification are prose.
+Also noted: Q_equivariant, Q_reflection, Q_posDef, evec_unit, evec_half_orthogonal, Q_eigen and
+invariant_isotropic are each used only once in the file -- they are standalone results cited by
+the README rather than internal steps, which is intended, not dead code.
+Local main (65b8c87, the byline commit made in this environment) is NOT on the remote; the remote
+has its own byline lineage (c74faec). Reconciling those remains the author's call.
+[~] The fresh-worktree pinned rebuild of commit 1012259 was started and then STOPPED: Lake's
+    build traces embed absolute paths, so in a new worktree the Mathlib cache is ignored and all
+    8925 jobs rebuild from source (an hour on this VM). The pinned verification of the same bytes
+    already stands from the root worktree (twice, "Build completed successfully (8925 jobs)"), and
+    the blob hash of ThreeBody/Basic.lean is identical in 48151a7 and 1012259, so the check
+    transfers by byte identity rather than by re-running it. Worktree removed; disk back to 87 G.
+
+-------------------------------------------------------------------------------
+21. AUDIT MEMBER m3: THE DISC IS SHARP (verdict MATCH, Lean stronger than prose)
+-------------------------------------------------------------------------------
+Q_posDef's hypothesis p0^2 + p1^2 < 4 is not an arbitrary smallness window: m3 (swarm smwtb1m04)
+proved with Lean, against a copy of the published file, that for r >= 2 the direction (0,1) gives
+value 0 at r = 2 and negative beyond, so the form is not strictly positive there. The region is
+therefore exactly x^2 + y^2 < 4, and the prose "positive definite near the origin" is accurate but
+weaker than the theorem.
+Paper consequence, applied to notes/remark7-replacement.txt: the Remark 7 text now says
+"positive definite on the disc x^2 + y^2 < 4 -- and not beyond it, where the direction (0,1) gives
+1 - r/2 <= 0". The parenthetical is a one-line computation a reader can check, so this
+strengthening needs no formal citation; the Lean backing is Q_posDef plus m3's sharpness example.
+
+-------------------------------------------------------------------------------
+22. AUDIT MEMBER m2 FOUND AN ERROR IN MY PAPER SENTENCE (corrected)
+-------------------------------------------------------------------------------
+What was wrong: I wrote "The eigenline does not come back to itself either". That is false.
+Negating a nonzero vector does not change its span, so the unoriented line DOES return:
+evec 0 = (1,0) and evec (2π) = (-1,0) are the same line. What fails to return is the field of
+unit vectors, not the line. Monodromy -1 is a statement about the framed (oriented) field; the
+line field itself is single-valued and has index +1. The sentence was doing double duty for a
+correct theorem (evec_monodromy) and an incorrect gloss.
+
+Also from m2, all accepted:
+  - "the larger eigenvalue" needs r > 0: at r = 0 the two eigenvalues coincide and "larger" has
+    no meaning. The Lean statement has hr : 0 < r for exactly this reason; the prose was silent.
+  - M(-w) = M(w) is gram_even only after the coordinate identification of the antipode; the paper
+    should state it: in Sec. 2 coordinates (vartheta, phi) -> (pi - vartheta, phi + pi).
+  - "every odd term vanishes" should be attributed to the explicit even formula diag(cos^2,1),
+    not to gram_even, which is a matrix equality and not a Taylor theorem. sin^2 vartheta is the
+    exact gap, whose leading term is vartheta^2 -- not "the quadratic term vanishes".
+  - the unit-norm falsity is still unbacked in the repository (m2 confirms: no committed
+    counterexample declaration; the untracked file compiles and does refute r = 1).
+  - no withdrawn wording survives in commit 1012259.
+
+CORRECTED SENTENCE now in notes/remark7-replacement.txt:
+  "The unoriented eigenline does come back to itself, but the field of unit eigenvectors does not:
+  on each circle of radius r > 0 about the pole, a continuous unit eigenvector field for the larger
+  eigenvalue returns negated after one circuit, and the flip is forced."
+followed by the sharpness sentence ("Without the unit-norm hypothesis it is false, ...") and a short
+clause that at r = 0 the eigenvalue is repeated and "larger" has no meaning.
+
+Standing lesson, worth keeping: "monodromy -1" is about the vector, "index +1" is about the line.
+I conflated them in one sentence and the audit caught it. Both facts are true and they are not the
+same fact.
+
+-------------------------------------------------------------------------------
+23. AUDIT SWARM smwtb1m04 SOLVED (3 accepted); FOUR MORE REPAIRS, PUSHED
+-------------------------------------------------------------------------------
+m3  positivity: Q_posDef's disc is sharp (see section 21).
+m2  caught the false "eigenline does not come back to itself" and the missing r > 0
+    (see section 22), plus: Q_gap_linear is only the discriminant identity, M(-w) = M(w) needs
+    the antipode coordinates, gram_even is not a Taylor theorem, no withdrawn wording survives.
+m1  caught two omitted hypotheses in the REPOSITORY's own statements of Theorems 9 and 10:
+      Theorem 9  reciprocity and left_eigenvector both carry (hg : forall i, g i != 0), needed for
+                 B = diag(t/g); the README row and header bullet did not state it.
+      Theorem 10 ledger_min carries (h : 0 <= lam); without it both clauses fail, and m1's compiled
+                 counterexamples show it: ledger (-2) = log 2 (equality away from 0) and
+                 ledger (-1/2) = 0 < log 2 (lower bound fails). Real.log is 0 on negatives in
+                 Mathlib, which is why the unconditional reading is wrong.
+    m1 also: gap_quadratic, not gap_eq, is the quadratic-closing result.
+    (m1's and m2's remaining gaps coincide with sections 20 and 22.)
+
+Repairs pushed as commit eb570e4 "Restore two omitted hypotheses in the Theorem 9 and 10
+statements": README rows and file header bullets now say "with g != 0 pointwise" and "for
+lambda_min >= 0", and the z3_isotropic docstring cites gap_quadratic via gap_eq. Documentation
+only; 4.35 compile exit 0. Remote main is now eb570e4.
+
+Score of this double-check, across three members and my own pass: one stale badge (22 -> 46), one
+false sentence in the paper text (eigenline), two omitted hypotheses in the repository's own
+statements, three loose attributions (gap_eq vs gap_quadratic, gram_even vs Taylor, generated D3),
+one quantitative improvement (disc is sharp), and one unbacked clause that is still unbacked
+(the non-unit counterexample is not committed).
+
+-------------------------------------------------------------------------------
+24. FOURTH FALSE CONTROL COMMITTED AND PUSHED (session final state)
+-------------------------------------------------------------------------------
+Commit 9a54422 "Add the non-unit counterexample as a fourth false control":
+  FalseControls/unit_norm_needed.lean  the un-normalised monodromy claim (continuous,
+      nowhere-zero eigenvector field for the larger eigenvalue implies w (φ+2π) = -w φ) plus the
+      concrete refutation at φ = π: with w φ = (2 + sin (φ/2)) evec φ, w (3π) = (0,1) while
+      -w π = (0,3). Both examples are rejected with "unsolved goals" -- the arithmetic failing,
+      not a missing name -- which is exactly what verify.py demands of a false control.
+  scripts/config.json   expected_theorems 22 -> 46, expected_false_controls 3 -> 4.
+  README.md             "three deliberately false statements" -> "four".
+
+THE FINDING BEHIND THE CONFIG CHANGE, worth keeping: verify.py asserts the module's theorem count
+equals a number in config.json. The Remark 7 commit took ThreeBody/Basic.lean from 22 theorems to
+46, so CI would have failed on the published commit with "inventory changed: 46 theorems, expected
+22" -- the same stale number that the README badge carried, in a second place. Both are now 46. A
+count that lives in three places (badge, config, prose) is a count that drifts; if it is kept, it
+should be derived rather than written down.
+
+Remote main is now 9a54422. Published history of this session's work:
+  1012259  Make Remark 7 pointwise, and prove what it is not
+  c7cc62f  Fix the theorem-count badge: 22 -> 46
+  eb570e4  Restore two omitted hypotheses in the Theorem 9 and 10 statements
+  9a54422  Add the non-unit counterexample as a fourth false control
+(with c74faec, upstream's byline correction, sitting between the first and second).
